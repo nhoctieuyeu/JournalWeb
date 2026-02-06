@@ -1,0 +1,62 @@
+﻿@model List<JournalWeb.Models.NhatKy>
+
+<style>
+    .list {
+        max-width: 600px;
+        margin: auto;
+        padding: 15px;
+    }
+
+    .card {
+        border-radius: 14px;
+        margin-bottom: 15px;
+    }
+
+        .card img, .card video {
+            width: 100%;
+            border-radius: 10px;
+            margin-top: 10px;
+        }
+
+    .fab {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        font-size: 28px;
+    }
+</style>
+
+<div class="list">
+    @foreach (var item in Model)
+    {
+        <div class="card p-3 shadow-sm">
+            <small class="text-muted">
+                @(item.NgayViet?.ToString("dd/MM/yyyy") ?? "")
+            </small>
+
+            <h6 class="mt-1">@item.TieuDe</h6>
+            <p>@item.NoiDung</p>
+
+            @if (item.Medias != null && item.Medias.Any())
+            {
+                foreach (var m in item.Medias)
+                {
+                    if (m.LoaiMedia == "video")
+                    {
+                        <video src="@m.DuongDanFile" controls></video>
+                    }
+                    else
+                    {
+                        <img src="@m.DuongDanFile" />
+                    }
+                }
+            }
+        </div>
+    }
+</div>
+
+<a href="@Url.Action("Create")"
+   class="btn btn-primary fab">+</a>

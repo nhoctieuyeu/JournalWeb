@@ -1,0 +1,58 @@
+﻿@{
+    ViewBag.Title = "Đăng ký";
+}
+
+<div class="auth-card">
+    <h2 class="text-center">Tạo tài khoản</h2>
+
+    @if (ViewBag.Loi != null)
+    {
+        <div class="alert alert-danger">@ViewBag.Loi</div>
+    }
+
+    <form method="post">
+        <div class="form-group">
+            <label>Email</label>
+            <input name="email" class="form-control" required />
+        </div>
+
+        <div class="form-group">
+            <label>Họ tên</label>
+            <input name="hoTen" class="form-control" />
+        </div>
+
+        <!-- MẬT KHẨU -->
+        <div class="form-group password-group">
+            <label>Mật khẩu</label>
+            <input type="password" id="password" name="matKhau" class="form-control" required />
+            <span class="toggle-password" onclick="togglePassword('password', this)">👁</span>
+        </div>
+
+        <!-- XÁC NHẬN MẬT KHẨU -->
+        <div class="form-group password-group">
+            <label>Xác nhận mật khẩu</label>
+            <input type="password" id="confirmPassword" name="confirmMatKhau" class="form-control" required />
+            <span class="toggle-password" onclick="togglePassword('confirmPassword', this)">👁</span>
+        </div>
+
+        <!-- PIN -->
+        <div class="form-group password-group">
+            <label>Mã PIN (04 số)</label>
+            <input type="password" id="pin" name="pin" maxlength="4" class="form-control" required />
+            <span class="toggle-password" onclick="togglePassword('pin', this)">👁</span>
+        </div>
+
+        <!-- XÁC NHẬN PIN -->
+        <div class="form-group password-group">
+            <label>Xác nhận PIN</label>
+            <input type="password" id="confirmPin" name="confirmPin" maxlength="4" class="form-control" required />
+            <span class="toggle-password" onclick="togglePassword('confirmPin', this)">👁</span>
+        </div>
+
+        <button class="btn btn-primary btn-block">Đăng ký</button>
+
+        <div class="text-center mt-3">
+            <a href="/Auth/Login">Đã có tài khoản? Đăng nhập</a>
+        </div>
+    </form>
+</div>

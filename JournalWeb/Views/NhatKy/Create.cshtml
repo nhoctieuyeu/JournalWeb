@@ -1,0 +1,89 @@
+﻿@{
+    ViewData["Title"] = "Viết nhật ký";
+}
+
+<style>
+    body {
+        background: #f4f6fa;
+    }
+
+    .editor {
+        max-width: 600px;
+        margin: auto;
+        padding: 15px;
+    }
+
+    .header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+        .header a {
+            font-size: 22px;
+            text-decoration: none;
+        }
+
+    textarea {
+        border-radius: 12px;
+    }
+
+    .media-preview img, video {
+        max-width: 100%;
+        border-radius: 12px;
+        margin-top: 10px;
+    }
+</style>
+
+<div class="editor">
+    <div class="header">
+        <a href="@Url.Action("Index")">⬅</a>
+        <h5>Nhật ký mới</h5>
+    </div>
+
+    <form method="post" enctype="multipart/form-data">
+        <input class="form-control my-2" name="tieuDe" placeholder="Tiêu đề (không bắt buộc)" />
+
+        <input type="date" name="ngayViet" class="form-control my-2"
+               value="@DateTime.Now.ToString("yyyy-MM-dd")" />
+
+        <textarea class="form-control my-2" rows="6"
+                  name="noiDung"
+                  placeholder="Hôm nay bạn cảm thấy thế nào?"></textarea>
+
+        <input type="file" name="media" class="form-control my-2"
+               accept="image/*,video/*"
+               onchange="preview(this)" />
+
+        <div class="media-preview" id="preview"></div>
+
+        @if (ViewBag.Loi != null)
+        {
+            <div class="text-danger">@ViewBag.Loi</div>
+        }
+
+        <button class="btn btn-primary w-100 mt-3">💾 Lưu nhật ký</button>
+    </form>
+</div>
+
+<script>
+function preview(input) {
+    const p = document.getElementById("preview");
+    p.innerHTML = "";
+
+    const file = input.files[0];
+    if (!file) return;
+
+    if (file.type.startsWith("image")) {
+        const img = document.createElement("img");
+        img.src = URL.createObjectURL(file);
+        p.appendChild(img);
+    }
+    else if (file.type.startsWith("video")) {
+        const v = document.createElement("video");
+        v.src = URL.createObjectURL(file);
+        v.controls = true;
+        p.appendChild(v);
+    }
+}
+</script>

@@ -1,0 +1,25 @@
+﻿.auth-card {
+    max-width: 420px;
+    margin: 50px auto;
+    padding: 25px;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+.password-group {
+    position: relative;
+}
+
+.toggle-password {
+    position: absolute;
+    right: 12px;
+    top: 38px;
+    cursor: pointer;
+    font-size: 18px;
+    color: #666;
+}
+
+    .toggle-password:hover {
+        color: #000;
+    }

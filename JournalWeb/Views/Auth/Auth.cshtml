@@ -1,0 +1,36 @@
+﻿<div class="container mt-5" style="max-width:380px">
+    <h3 class="text-center">📓 Journal</h3>
+
+    <div id="login">
+        <input class="form-control mb-2" placeholder="Email">
+        <input class="form-control mb-2" placeholder="Mật khẩu">
+        <button class="btn btn-dark w-100">Đăng nhập</button>
+
+        <div class="text-center mt-2">
+            <a href="#" onclick="show('forgot')">Quên mật khẩu</a> |
+            <a href="#" onclick="show('register')">Đăng ký</a>
+        </div>
+    </div>
+
+    <div id="register" style="display:none">
+        <input class="form-control mb-2" placeholder="Email">
+        <input class="form-control mb-2" placeholder="Mật khẩu">
+        <button class="btn btn-success w-100">Tạo tài khoản</button>
+        <a href="#" onclick="show('login')">← Quay lại</a>
+    </div>
+
+    <div id="forgot" style="display:none">
+        <input class="form-control mb-2" placeholder="Email">
+        <button class="btn btn-warning w-100">Tiếp tục</button>
+        <a href="#" onclick="show('login')">← Quay lại</a>
+    </div>
+</div>
+
+<script>
+function show(id){
+    ['login','register','forgot'].forEach(x =>
+        document.getElementById(x).style.display = 'none'
+    );
+    document.getElementById(id).style.display = 'block';
+}
+</script>

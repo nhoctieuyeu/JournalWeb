@@ -1,0 +1,12 @@
+﻿<h2>🔒 Nhập PIN Nhật ký</h2>
+
+<form method="post">
+    <input type="password" name="pin" maxlength="6" required class="form-control" />
+    <br />
+    <button class="btn btn-success">Mở khóa</button>
+</form>
+
+@if (ViewBag.Error != null)
+{
+    <p style="color:red">@ViewBag.Error</p>
+}

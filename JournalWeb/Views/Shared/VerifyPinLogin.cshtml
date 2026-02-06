@@ -1,0 +1,23 @@
+﻿@{
+    ViewData["Title"] = "Xác thực mã PIN";
+}
+
+<h2>Xác thực mã PIN</h2>
+
+@if (ViewBag.Loi != null)
+{
+    <p style="color:red">@ViewBag.Loi</p>
+}
+
+<form method="post">
+    <label>Nhập mã PIN</label>
+    <input type="password"
+           name="pin"
+           maxlength="4"
+           pattern="[0-9]{4}"
+           required />
+
+    <br /><br />
+
+    <button type="submit">Xác nhận</button>
+</form>

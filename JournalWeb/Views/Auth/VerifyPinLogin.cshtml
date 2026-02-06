@@ -1,0 +1,109 @@
+﻿@{
+    ViewData["Title"] = "Xác nhận mã PIN";
+    Layout = "_Layout";
+}
+
+<style>
+    .pin-box {
+        max-width: 360px;
+        margin: 80px auto;
+        padding: 30px;
+        border-radius: 16px;
+        background: #fff;
+        box-shadow: 0 10px 25px rgba(0,0,0,.15);
+        text-align: center;
+    }
+
+    .pin-inputs {
+        display: flex;
+        justify-content: center;
+        gap: 12px;
+        margin: 20px 0;
+    }
+
+        .pin-inputs input {
+            width: 50px;
+            height: 60px;
+            font-size: 28px;
+            text-align: center;
+            border-radius: 10px;
+            border: 1px solid #ccc;
+        }
+
+    .btn-pin {
+        width: 100%;
+        padding: 12px;
+        border-radius: 10px;
+        border: none;
+        background: #007aff;
+        color: white;
+        font-size: 16px;
+    }
+
+    .error {
+        color: red;
+        margin-top: 10px;
+    }
+
+    @@keyframes shake {
+        0% {
+            transform: translateX(0);
+        }
+
+        25% {
+            transform: translateX(-5px);
+        }
+
+        50% {
+            transform: translateX(5px);
+        }
+
+        75% {
+            transform: translateX(-5px);
+        }
+
+        100% {
+            transform: translateX(0);
+        }
+    }
+
+    .shake {
+        animation: shake 0.3s;
+    }
+</style>
+
+<div class="pin-box">
+    <h4>🔐 Nhập mã PIN</h4>
+
+    <form method="post">
+        <div class="pin-inputs" id="pinBox">
+            <input type="password" maxlength="1" />
+            <input type="password" maxlength="1" />
+            <input type="password" maxlength="1" />
+            <input type="password" maxlength="1" />
+        </div>
+
+        <input type="hidden" name="pin" id="pinValue" />
+
+        <button class="btn-pin" type="submit">Xác nhận</button>
+
+        @if (ViewBag.Loi != null)
+        {
+            <div class="error">@ViewBag.Loi</div>
+        }
+    </form>
+</div>
+
+<script>
+    const inputs = document.querySelectorAll(".pin-inputs input");
+    const hidden = document.getElementById("pinValue");
+
+    inputs.forEach((input, index) => {
+        input.addEventListener("input", () => {
+            if (input.value && index < inputs.length - 1) {
+                inputs[index + 1].focus();
+            }
+            hidden.value = Array.from(inputs).map(i => i.value).join('');
+        });
+    });
+</script>
