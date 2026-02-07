@@ -80,25 +80,29 @@
             inset: 0;
             border-radius: 50%;
             background: radial-gradient(circle at 35% 30%, var(--c1), var(--c2));
-            border: 1px solid color-mix(in srgb, var(--c4) 70%, var(--c3));
+            border: 2px solid color-mix(in srgb, var(--c4) 82%, var(--c3));
         }
 
         .emotion-shape .l1 {
             transform: scale(1) rotate(2deg);
+            animation: cardRippleA 4s ease-in-out infinite;
         }
 
         .emotion-shape .l2 {
             transform: scale(.78) rotate(-7deg);
+            animation: cardRippleB 3.2s ease-in-out infinite;
         }
 
         .emotion-shape .l3 {
             transform: scale(.58) rotate(11deg);
+            animation: cardRippleC 2.8s ease-in-out infinite;
         }
 
         .emotion-shape .core {
             inset: 44%;
-            background: radial-gradient(circle at center, #fff, color-mix(in srgb, var(--c2) 75%, white));
+            background: radial-gradient(circle at center, #fff, color-mix(in srgb, var(--c2) 78%, white));
             border: 0;
+            animation: cardCoreGlow 2.2s ease-in-out infinite;
         }
 
     .shape-spiky .layer, .shape-spiky .core {
@@ -155,6 +159,46 @@
         background: rgba(255,255,255,.65);
         padding: 2px 8px;
         border-radius: 10px;
+    }
+
+    @@keyframes cardRippleA {
+        0%, 100% {
+            transform: scale(1) rotate(2deg);
+        }
+
+        50% {
+            transform: scale(1.03) rotate(-1deg);
+        }
+    }
+
+    @@keyframes cardRippleB {
+        0%, 100% {
+            transform: scale(.78) rotate(-7deg);
+        }
+
+        50% {
+            transform: scale(.82) rotate(-2deg);
+        }
+    }
+
+    @@keyframes cardRippleC {
+        0%, 100% {
+            transform: scale(.58) rotate(11deg);
+        }
+
+        50% {
+            transform: scale(.62) rotate(6deg);
+        }
+    }
+
+    @@keyframes cardCoreGlow {
+        0%, 100% {
+            box-shadow: 0 0 8px color-mix(in srgb, var(--c3) 40%, transparent);
+        }
+
+        50% {
+            box-shadow: 0 0 20px color-mix(in srgb, var(--c3) 70%, transparent);
+        }
     }
 
     .fab {

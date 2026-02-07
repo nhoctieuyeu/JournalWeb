@@ -63,8 +63,9 @@
         width: 210px;
         height: 210px;
         position: relative;
-        filter: drop-shadow(0 18px 28px color-mix(in srgb, var(--c3) 25%, transparent));
-        animation: breath 4.2s ease-in-out infinite;
+        filter: drop-shadow(0 20px 26px color-mix(in srgb, var(--c3) 35%, transparent));
+        animation: breath 3.2s ease-in-out infinite;
+        transform-style: preserve-3d;
     }
 
         .mood-art .layer,
@@ -73,29 +74,33 @@
             inset: 0;
             border-radius: 50%;
             background: radial-gradient(circle at 35% 30%, var(--c1), var(--c2));
-            border: 1.5px solid color-mix(in srgb, var(--c4) 70%, var(--c3));
+            border: 2px solid color-mix(in srgb, var(--c4) 82%, var(--c3));
         }
 
         .mood-art .l1 {
             transform: scale(1) rotate(2deg);
-            opacity: .92;
+            opacity: .97;
+            animation: rippleA 4.2s ease-in-out infinite;
         }
 
         .mood-art .l2 {
             transform: scale(.78) rotate(-7deg);
-            opacity: .92;
+            opacity: .96;
+            animation: rippleB 3.3s ease-in-out infinite;
         }
 
         .mood-art .l3 {
             transform: scale(.58) rotate(11deg);
-            opacity: .95;
+            opacity: .98;
+            animation: rippleC 2.7s ease-in-out infinite;
         }
 
         .mood-art .core {
             inset: 44%;
-            background: radial-gradient(circle at center, #fff, color-mix(in srgb, var(--c2) 75%, white));
+            background: radial-gradient(circle at center, #fff, color-mix(in srgb, var(--c2) 78%, white));
             border: 0;
-            box-shadow: 0 0 16px color-mix(in srgb, var(--c3) 40%, transparent);
+            box-shadow: 0 0 18px color-mix(in srgb, var(--c3) 52%, transparent);
+            animation: coreGlow 2.2s ease-in-out infinite;
         }
 
     .shape-spiky .layer,
@@ -151,11 +156,51 @@
 
     @@keyframes breath {
         0%, 100% {
-            transform: scale(1);
+            transform: scale(1) translateY(0);
         }
 
         50% {
-            transform: scale(1.045);
+            transform: scale(1.05) translateY(-2px);
+        }
+    }
+
+    @@keyframes rippleA {
+        0%, 100% {
+            transform: scale(1) rotate(2deg);
+        }
+
+        50% {
+            transform: scale(1.03) rotate(-1deg);
+        }
+    }
+
+    @@keyframes rippleB {
+        0%, 100% {
+            transform: scale(.78) rotate(-7deg);
+        }
+
+        50% {
+            transform: scale(.82) rotate(-2deg);
+        }
+    }
+
+    @@keyframes rippleC {
+        0%, 100% {
+            transform: scale(.58) rotate(11deg);
+        }
+
+        50% {
+            transform: scale(.62) rotate(6deg);
+        }
+    }
+
+    @@keyframes coreGlow {
+        0%, 100% {
+            box-shadow: 0 0 10px color-mix(in srgb, var(--c3) 40%, transparent);
+        }
+
+        50% {
+            box-shadow: 0 0 24px color-mix(in srgb, var(--c3) 75%, transparent);
         }
     }
 
@@ -164,7 +209,7 @@
         width: 100%;
         height: 20px;
         border-radius: 99px;
-        background: rgba(255,255,255,.35);
+        background: rgba(255,255,255,.46);
         outline: none;
     }
 
@@ -363,7 +408,7 @@
         { name: "Rất dễ chịu", shape: "shape-star", bg: "radial-gradient(circle at 50% 25%, #f8e4ba, #f0cf96)", c1: "#fff7e2", c2: "#ffc85c", c3: "#f09f17", c4: "#fffdf5", desc: ["Kinh ngạc", "Phấn khích", "Ngạc nhiên", "Sôi nổi", "Hạnh phúc", "Vui vẻ", "Dũng cảm", "Tự hào", "Tự tin", "Hy vọng", "Thích thú", "Thoả mãn", "Nhẹ nhõm", "Biết ơn", "Hài lòng", "Bình tĩnh", "Bình yên"] }
     ];
 
-    const impacts = ["Sức khe", "Thể dục", "Chăm sóc bản thân", "Sở thích", "Danh tính", "Tâm linh", "Cộng đồng", "Gia đình", "Bạn bè", "Bạn đời", "Hẹn hò", "Nhiệm vụ", "Công việc", "Giáo dục", "Du lịch", "Thời tiết", "Sự kiện hiện tại", "Tiền"];
+    const impacts = ["Sức khỏe", "Thể dục", "Chăm sóc bản thân", "Sở thích", "Danh tính", "Tâm linh", "Cộng đồng", "Gia đình", "Bạn bè", "Bạn đời", "Hẹn hò", "Nhiệm v", "Công việc", "Giáo dục", "Du lịch", "Thời tiết", "Sự kiện hiện tại", "Tiền"];
 
     const selectedFiles = [];
     const selectedDescs = new Set();
