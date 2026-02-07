@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace JournalWeb.Controllers
 {
@@ -58,7 +59,6 @@ namespace JournalWeb.Controllers
             string tieuDe,
             string noiDung,
             DateTime ngayViet,
-            IFormFile media,
             List<IFormFile> medias)
         {
             var userId = CheckLogin();
@@ -71,44 +71,19 @@ namespace JournalWeb.Controllers
                 return View();
             }
 
-            var allowExtensions = new[] { ".jpg", ".jpeg", ".png", ".mp4", ".mov", ".webm" };
-            var folder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads");
-            Directory.CreateDirectory(folder);
-
             var uploadedFiles = new List<(string FilePath, string Ext)>();
-            string mainFilePath = null;
-            string mainExt = null;
 
-            // Xử lý tải media chính
-            if (media != null && media.Length > 0)
-            {
-                mainExt = Path.GetExtension(media.FileName).ToLower();
-
-                if (!allowExtensions.Contains(mainExt))
-                {
-                    ViewBag.Loi = "Chỉ cho phép ảnh hoặc video ngắn (.jpg, .jpeg, .png, .mp4, .mov, .webm)";
-                    return View();
-                }
-
-                var mainFileName = Guid.NewGuid() + mainExt;
-                var fullPath = Path.Combine(folder, mainFileName);
-
-                using (var stream = new FileStream(fullPath, FileMode.Create))
-                {
-                    media.CopyTo(stream);
-                }
-
-                mainFilePath = "/uploads/" + mainFileName;
-                uploadedFiles.Add((mainFilePath, mainExt));
-            }
-
-            // Xử lý tải các medias phụ
             if (medias != null && medias.Any(f => f != null && f.Length > 0))
             {
-                foreach (var f in medias.Where(f => f != null && f.Length > 0))
+                var allow = new[] { ".jpg", ".jpeg", ".png", ".mp4", ".mov", ".webm" };
+                var folder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads");
+                Directory.CreateDirectory(folder);
+
+                foreach (var media in medias.Where(f => f != null && f.Length > 0))
                 {
-                    var ext = Path.GetExtension(f.FileName).ToLower();
-                    if (!allowExtensions.Contains(ext))
+                    var ext = Path.GetExtension(media.FileName).ToLower();
+
+                    if (!allow.Contains(ext))
                     {
                         ViewBag.Loi = "Chỉ cho phép ảnh hoặc video ngắn (.jpg, .jpeg, .png, .mp4, .mov, .webm)";
                         return View();
@@ -119,14 +94,13 @@ namespace JournalWeb.Controllers
 
                     using (var stream = new FileStream(fullPath, FileMode.Create))
                     {
-                        f.CopyTo(stream);
+                        media.CopyTo(stream);
                     }
 
                     uploadedFiles.Add(("/uploads/" + fileName, ext));
                 }
             }
 
-            // Lưu nhật ký
             var nk = new NhatKy
             {
                 NguoiDungId = userId.Value,
@@ -139,7 +113,7 @@ namespace JournalWeb.Controllers
             _context.NhatKy.Add(nk);
             _context.SaveChanges();
 
-            // Lưu media liên quan
+            // ===== LƯU MEDIA RIÊNG =====
             if (uploadedFiles.Any())
             {
                 foreach (var file in uploadedFiles)
@@ -153,10 +127,13 @@ namespace JournalWeb.Controllers
                             : "image",
                         NgayTao = DateTime.Now
                     };
+
                     _context.NhatKyMedia.Add(mediaEntity);
                 }
+
                 _context.SaveChanges();
             }
+
 
             return RedirectToAction("Index");
         }

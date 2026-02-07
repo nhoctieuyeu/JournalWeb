@@ -12,12 +12,6 @@
         margin-bottom: 15px;
     }
 
-        .card img, .card video {
-            width: 100%;
-            border-radius: 10px;
-            margin-top: 10px;
-        }
-
     .media-grid {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
@@ -52,7 +46,7 @@
         bottom: 8px;
         font-size: 11px;
         color: #fff;
-        background: rgba(0, 0, 0, 0.55);
+        background: rgba(0, 0, 0, .55);
         padding: 2px 7px;
         border-radius: 16px;
     }
@@ -65,14 +59,6 @@
         height: 56px;
         border-radius: 50%;
         font-size: 28px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background-color: #007bff;
-        color: #fff;
-        text-decoration: none;
-        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-        z-index: 999;
     }
 </style>
 
@@ -83,11 +69,13 @@
             <small class="text-muted">
                 @(item.NgayViet?.ToString("dd/MM/yyyy") ?? "")
             </small>
+
             @if (!string.IsNullOrWhiteSpace(item.TieuDe))
             {
                 <h6 class="mt-1">@item.TieuDe</h6>
             }
-            <p>@item.NoiDung</p>
+
+            <p class="mb-1">@item.NoiDung</p>
 
             @{
                 var medias = item.Medias?.ToList() ?? new List<JournalWeb.Models.NhatKyMedia>();
@@ -95,22 +83,21 @@
 
             @if (medias.Any())
             {
-                // Lặp qua từng media
                 <div class="media-grid">
                     @for (int i = 0; i < medias.Count; i++)
                     {
-                        var m = medias[i];
+                        var media = medias[i];
                         var bigClass = i == 0 ? "big" : "";
 
                         <div class="media-item @bigClass">
-                            @if (m.LoaiMedia == "video")
+                            @if (media.LoaiMedia == "video")
                             {
-                                <video src="@m.DuongDanFile" controls playsinline></video>
+                                <video src="@media.DuongDanFile" controls playsinline></video>
                                 <span class="media-tag">Video</span>
                             }
                             else
                             {
-                                <img src="@m.DuongDanFile" alt="media" />
+                                <img src="@media.DuongDanFile" alt="media" />
                                 <span class="media-tag">Ảnh</span>
                             }
                         </div>
@@ -121,4 +108,5 @@
     }
 </div>
 
-<a href="@Url.Action("Create")" class="fab">+</a>
+<a href="@Url.Action("Create")"
+   class="btn btn-primary fab">+</a>
