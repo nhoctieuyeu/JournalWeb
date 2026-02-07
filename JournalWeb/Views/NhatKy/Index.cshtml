@@ -32,8 +32,7 @@
             min-height: 190px;
         }
 
-        .media-item img,
-        .media-item video {
+        .media-item img, .media-item video {
             width: 100%;
             height: 100%;
             object-fit: cover;
@@ -52,7 +51,6 @@
     }
 
     .emotion-card {
-        color: #2a2d47;
         position: relative;
     }
 
@@ -64,88 +62,10 @@
         justify-content: center;
     }
 
-    .emotion-shape {
+    .emotion-svg-wrap {
         width: 120px;
         height: 120px;
-        position: relative;
-        --c1: #f4e8ff;
-        --c2: #caa5ff;
-        --c3: #8f67d8;
-        --c4: #fff;
-    }
-
-        .emotion-shape .layer,
-        .emotion-shape .core {
-            position: absolute;
-            inset: 0;
-            border-radius: 50%;
-            background: radial-gradient(circle at 35% 30%, var(--c1), var(--c2));
-            border: 2px solid color-mix(in srgb, var(--c4) 82%, var(--c3));
-        }
-
-        .emotion-shape .l1 {
-            transform: scale(1) rotate(2deg);
-            animation: cardRippleA 4s ease-in-out infinite;
-        }
-
-        .emotion-shape .l2 {
-            transform: scale(.78) rotate(-7deg);
-            animation: cardRippleB 3.2s ease-in-out infinite;
-        }
-
-        .emotion-shape .l3 {
-            transform: scale(.58) rotate(11deg);
-            animation: cardRippleC 2.8s ease-in-out infinite;
-        }
-
-        .emotion-shape .core {
-            inset: 44%;
-            background: radial-gradient(circle at center, #fff, color-mix(in srgb, var(--c2) 78%, white));
-            border: 0;
-            animation: cardCoreGlow 2.2s ease-in-out infinite;
-        }
-
-    .shape-spiky .layer, .shape-spiky .core {
-        clip-path: polygon(50% 0%, 62% 18%, 83% 10%, 78% 33%, 100% 50%, 78% 67%, 83% 90%, 62% 82%, 50% 100%, 38% 82%, 17% 90%, 22% 67%, 0% 50%, 22% 33%, 17% 10%, 38% 18%);
-        border-radius: 0;
-    }
-
-    .shape-wave .layer, .shape-wave .core {
-        border-radius: 44% 56% 47% 53% / 52% 45% 55% 48%;
-    }
-
-    .shape-soft .layer, .shape-soft .core {
-        border-radius: 50% 50% 46% 54% / 42% 58% 42% 58%;
-    }
-
-    .shape-pentagon .layer, .shape-pentagon .core {
-        clip-path: polygon(50% 2%, 95% 35%, 79% 92%, 21% 92%, 5% 35%);
-        border-radius: 0;
-    }
-
-    .shape-star .layer, .shape-star .core {
-        clip-path: polygon(50% 0%, 61% 30%, 95% 35%, 69% 56%, 78% 90%, 50% 70%, 22% 90%, 31% 56%, 5% 35%, 39% 30%);
-        border-radius: 0;
-    }
-
-    .shape-rings .layer, .shape-rings .core {
-        border-radius: 50%;
-    }
-
-    .shape-rings .l1 {
-        background: transparent;
-        border: 2px solid color-mix(in srgb, var(--c4) 85%, var(--c2));
-    }
-
-    .shape-rings .l2 {
-        inset: 13%;
-        background: transparent;
-        border: 2px solid color-mix(in srgb, var(--c4) 40%, var(--c2));
-    }
-
-    .shape-rings .l3 {
-        inset: 28%;
-        background: radial-gradient(circle at 35% 35%, color-mix(in srgb, var(--c1) 86%, white), var(--c2));
+        filter: drop-shadow(0 10px 16px rgba(0,0,0,.12));
     }
 
     .emotion-name {
@@ -156,48 +76,69 @@
         text-align: center;
         font-weight: 700;
         font-size: 12px;
-        background: rgba(255,255,255,.65);
+        color: #2a2d47;
+        background: rgba(255,255,255,.72);
         padding: 2px 8px;
         border-radius: 10px;
     }
 
+    .emotion-svg-wrap .layer1 {
+        animation: cardRippleA 4s ease-in-out infinite;
+        transform-origin: 50% 50%;
+    }
+
+    .emotion-svg-wrap .layer2 {
+        animation: cardRippleB 3.2s ease-in-out infinite;
+        transform-origin: 50% 50%;
+    }
+
+    .emotion-svg-wrap .layer3 {
+        animation: cardRippleC 2.8s ease-in-out infinite;
+        transform-origin: 50% 50%;
+    }
+
+    .emotion-svg-wrap .core {
+        animation: cardCoreGlow 2.2s ease-in-out infinite;
+        transform-origin: 50% 50%;
+    }
+
     @@keyframes cardRippleA {
         0%, 100% {
-            transform: scale(1) rotate(2deg);
+            transform: scale(1) rotate(0deg);
         }
 
         50% {
-            transform: scale(1.03) rotate(-1deg);
+            transform: scale(1.03) rotate(-2deg);
         }
     }
 
     @@keyframes cardRippleB {
         0%, 100% {
-            transform: scale(.78) rotate(-7deg);
+            transform: scale(1) rotate(0deg);
         }
 
         50% {
-            transform: scale(.82) rotate(-2deg);
+            transform: scale(1.05) rotate(2deg);
         }
     }
 
     @@keyframes cardRippleC {
         0%, 100% {
-            transform: scale(.58) rotate(11deg);
+            transform: scale(1) rotate(0deg);
         }
 
         50% {
-            transform: scale(.62) rotate(6deg);
+            transform: scale(1.07) rotate(-3deg);
         }
     }
 
     @@keyframes cardCoreGlow {
         0%, 100% {
-            box-shadow: 0 0 8px color-mix(in srgb, var(--c3) 40%, transparent);
+            opacity: .82;
         }
 
         50% {
-            box-shadow: 0 0 20px color-mix(in srgb, var(--c3) 70%, transparent);
+            opacity: 1;
         }
     }
 
@@ -217,12 +158,8 @@
     {
         var noiDungHienThi = item.NoiDung ?? "";
         var moodLabel = "";
-        var moodShape = "";
+        var moodLevelRaw = "";
         var moodBg = "";
-        var moodC1 = "";
-        var moodC2 = "";
-        var moodC3 = "";
-        var moodC4 = "";
 
         if (noiDungHienThi.StartsWith("[[MOOD|"))
         {
@@ -233,17 +170,18 @@
                 var parts = token.Split('|');
                 if (parts.Length >= 2)
                 {
+                    moodLevelRaw = parts[0];
                     moodLabel = parts[1];
 
                     switch (parts[0])
                     {
-                        case "0": moodShape = "shape-spiky"; moodBg = "radial-gradient(circle at 50% 25%, #d9d2ef, #bcb0e3)"; moodC1 = "#f3ebff"; moodC2 = "#b28cf1"; moodC3 = "#7f4cc9"; moodC4 = "#f7f3ff"; break;
-                        case "1": moodShape = "shape-wave"; moodBg = "radial-gradient(circle at 50% 25%, #d7e2fb, #beccef)"; moodC1 = "#f0f5ff"; moodC2 = "#9ab4ff"; moodC3 = "#587de8"; moodC4 = "#eff5ff"; break;
-                        case "2": moodShape = "shape-soft"; moodBg = "radial-gradient(circle at 50% 25%, #dff0f8, #cbdeee)"; moodC1 = "#ebf9ff"; moodC2 = "#8cc9f3"; moodC3 = "#4a9fdb"; moodC4 = "#f2fbff"; break;
-                        case "3": moodShape = "shape-rings"; moodBg = "radial-gradient(circle at 50% 25%, #e0eef2, #c9dde2)"; moodC1 = "#f4fdff"; moodC2 = "#9dd6e9"; moodC3 = "#73b8cf"; moodC4 = "#ffffff"; break;
-                        case "4": moodShape = "shape-pentagon"; moodBg = "radial-gradient(circle at 50% 25%, #e4f5d8, #cce6ba)"; moodC1 = "#f2ffe6"; moodC2 = "#9ee56a"; moodC3 = "#6dc539"; moodC4 = "#fcfff6"; break;
-                        case "5": moodShape = "shape-star"; moodBg = "radial-gradient(circle at 50% 25%, #f9efc8, #eedca5)"; moodC1 = "#fff7de"; moodC2 = "#ffd94d"; moodC3 = "#f0b31f"; moodC4 = "#fffdf3"; break;
-                        default: moodShape = "shape-star"; moodBg = "radial-gradient(circle at 50% 25%, #f8e4ba, #f0cf96)"; moodC1 = "#fff7e2"; moodC2 = "#ffc85c"; moodC3 = "#f09f17"; moodC4 = "#fffdf5"; break;
+                        case "0": moodBg = "radial-gradient(circle at 50% 25%, #d9d2ef, #bcb0e3)"; break;
+                        case "1": moodBg = "radial-gradient(circle at 50% 25%, #d7e2fb, #beccef)"; break;
+                        case "2": moodBg = "radial-gradient(circle at 50% 25%, #dff0f8, #cbdeee)"; break;
+                        case "3": moodBg = "radial-gradient(circle at 50% 25%, #e0eef2, #c9dde2)"; break;
+                        case "4": moodBg = "radial-gradient(circle at 50% 25%, #e4f5d8, #cce6ba)"; break;
+                        case "5": moodBg = "radial-gradient(circle at 50% 25%, #f9efc8, #eedca5)"; break;
+                        default: moodBg = "radial-gradient(circle at 50% 25%, #f8e4ba, #f0cf96)"; break;
                     }
 
                     noiDungHienThi = noiDungHienThi.Substring(end + 2).Trim();
@@ -252,9 +190,7 @@
         }
 
         <div class="card p-3 shadow-sm">
-            <small class="text-muted">
-                @(item.NgayViet?.ToString("dd/MM/yyyy") ?? "")
-            </small>
+            <small class="text-muted">@(item.NgayViet?.ToString("dd/MM/yyyy") ?? "")</small>
 
             @if (!string.IsNullOrWhiteSpace(item.TieuDe))
             {
@@ -274,12 +210,7 @@
                     {
                         <div class="media-item big emotion-card" style="background:@moodBg">
                             <div class="emotion-art">
-                                <div class="emotion-shape @moodShape" style="--c1:@moodC1;--c2:@moodC2;--c3:@moodC3;--c4:@moodC4;">
-                                    <span class="layer l1"></span>
-                                    <span class="layer l2"></span>
-                                    <span class="layer l3"></span>
-                                    <span class="core"></span>
-                                </div>
+                                <div class="emotion-svg-wrap js-mood-svg" data-level="@moodLevelRaw"></div>
                             </div>
                             <div class="emotion-name">@moodLabel</div>
                         </div>
@@ -309,5 +240,62 @@
     }
 </div>
 
-<a href="@Url.Action("Create")"
-   class="btn btn-primary fab">+</a>
+<a href="@Url.Action("Create")" class="btn btn-primary fab">+</a>
+
+<script>
+    const moodPalette = {
+        "0": { c1: "#f4ebff", c2: "#c39aff", c3: "#7c4bc4", waves: 8, amp: .24 },
+        "1": { c1: "#eef4ff", c2: "#9fb8ff", c3: "#5278e5", waves: 7, amp: .20 },
+        "2": { c1: "#ecf8ff", c2: "#92cdf5", c3: "#4a9fdb", waves: 6, amp: .17 },
+        "3": { c1: "#f6fdff", c2: "#a8dcee", c3: "#77b8cf", rings: true },
+        "4": { c1: "#f2ffe7", c2: "#a5e86f", c3: "#6bc436", waves: 5, amp: .13 },
+        "5": { c1: "#fff8df", c2: "#ffde58", c3: "#f0b21f", waves: 5, amp: .18 },
+        "6": { c1: "#fff7e3", c2: "#ffc75f", c3: "#f09d17", waves: 5, amp: .24 }
+    };
+
+    function blobPoints(radius, waves, amp, count = 180) {
+        let pts = [];
+        for (let i = 0; i < count; i++) {
+            const t = (Math.PI * 2 * i) / count;
+            const r = radius * (1 + amp * Math.sin(waves * t));
+            const x = 50 + r * Math.cos(t);
+            const y = 50 + r * Math.sin(t);
+            pts.push(`${x.toFixed(2)},${y.toFixed(2)}`);
+        }
+        return pts.join(' ');
+    }
+
+    function moodSvg(mood) {
+        if (mood.rings) {
+            return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <circle class="layer1" cx="50" cy="50" r="42" fill="none" stroke="${mood.c1}" stroke-width="1.2"/>
+                <circle class="layer2" cx="50" cy="50" r="31" fill="none" stroke="${mood.c2}" stroke-width="1.6"/>
+                <circle class="layer3" cx="50" cy="50" r="20" fill="url(#ig1)" stroke="${mood.c3}" stroke-width="1.2"/>
+                <circle class="core" cx="50" cy="50" r="4.5" fill="#fff"/>
+                <defs><radialGradient id="ig1" cx="35%" cy="30%"><stop offset="0%" stop-color="#fff"/><stop offset="100%" stop-color="${mood.c2}"/></radialGradient></defs>
+            </svg>`;
+        }
+
+        const p1 = blobPoints(38, mood.waves || 6, mood.amp || .2);
+        const p2 = blobPoints(29, mood.waves || 6, Math.max(.08, (mood.amp || .2) - .05));
+        const p3 = blobPoints(20, mood.waves || 6, Math.max(.05, (mood.amp || .2) - .08));
+
+        return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <radialGradient id="ia" cx="30%" cy="28%"><stop offset="0%" stop-color="#fff"/><stop offset="100%" stop-color="${mood.c1}"/></radialGradient>
+                <radialGradient id="ib" cx="35%" cy="32%"><stop offset="0%" stop-color="#fff"/><stop offset="100%" stop-color="${mood.c2}"/></radialGradient>
+                <radialGradient id="ic" cx="40%" cy="34%"><stop offset="0%" stop-color="#fff"/><stop offset="100%" stop-color="${mood.c3}"/></radialGradient>
+            </defs>
+            <polygon class="layer1" points="${p1}" fill="url(#ia)" stroke="${mood.c3}" stroke-opacity=".42" stroke-width=".8"/>
+            <polygon class="layer2" points="${p2}" fill="url(#ib)" stroke="${mood.c3}" stroke-opacity=".56" stroke-width=".9"/>
+            <polygon class="layer3" points="${p3}" fill="url(#ic)" stroke="${mood.c3}" stroke-opacity=".76" stroke-width="1"/>
+            <circle class="core" cx="50" cy="50" r="2.8" fill="#fff"/>
+        </svg>`;
+    }
+
+    document.querySelectorAll('.js-mood-svg').forEach(el => {
+        const level = el.getAttribute('data-level') || '0';
+        const mood = moodPalette[level] || moodPalette['0'];
+        el.innerHTML = moodSvg(mood);
+    });
+</script>
