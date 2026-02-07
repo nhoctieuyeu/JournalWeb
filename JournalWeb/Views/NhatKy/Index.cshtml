@@ -51,6 +51,28 @@
         border-radius: 16px;
     }
 
+    .emotion-card {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        color: #2a2d47;
+    }
+
+    .emotion-icon {
+        font-size: 44px;
+        line-height: 1;
+    }
+
+    .emotion-name {
+        font-weight: 700;
+        margin-top: 4px;
+        font-size: 12px;
+        background: rgba(255,255,255,.65);
+        padding: 2px 8px;
+        border-radius: 10px;
+    }
+
     .fab {
         position: fixed;
         bottom: 20px;
@@ -65,6 +87,38 @@
 <div class="list">
     @foreach (var item in Model)
     {
+        var noiDungHienThi = item.NoiDung ?? "";
+        var moodLabel = "";
+        var moodIcon = "";
+        var moodBg = "";
+
+        if (noiDungHienThi.StartsWith("[[MOOD|"))
+        {
+            var end = noiDungHienThi.IndexOf("]]", StringComparison.Ordinal);
+            if (end > 0)
+            {
+                var token = noiDungHienThi.Substring(7, end - 7);
+                var parts = token.Split('|');
+                if (parts.Length >= 2)
+                {
+                    moodLabel = parts[1];
+
+                    switch (parts[0])
+                    {
+                        case "0": moodIcon = "💜"; moodBg = "radial-gradient(circle at 50% 25%, #d9d2ef, #bcb0e3)"; break;
+                        case "1": moodIcon = "🟦"; moodBg = "radial-gradient(circle at 50% 25%, #d7e2fb, #beccef)"; break;
+                        case "2": moodIcon = "🩵"; moodBg = "radial-gradient(circle at 50% 25%, #dff0f8, #cbdeee)"; break;
+                        case "3": moodIcon = "🔵"; moodBg = "radial-gradient(circle at 50% 25%, #e0eef2, #c9dde2)"; break;
+                        case "4": moodIcon = "🟢"; moodBg = "radial-gradient(circle at 50% 25%, #e4f5d8, #cce6ba)"; break;
+                        case "5": moodIcon = "💛"; moodBg = "radial-gradient(circle at 50% 25%, #f9efc8, #eedca5)"; break;
+                        default: moodIcon = "🌼"; moodBg = "radial-gradient(circle at 50% 25%, #f8e4ba, #f0cf96)"; break;
+                    }
+
+                    noiDungHienThi = noiDungHienThi.Substring(end + 2).Trim();
+                }
+            }
+        }
+
         <div class="card p-3 shadow-sm">
             <small class="text-muted">
                 @(item.NgayViet?.ToString("dd/MM/yyyy") ?? "")
@@ -75,19 +129,27 @@
                 <h6 class="mt-1">@item.TieuDe</h6>
             }
 
-            <p class="mb-1">@item.NoiDung</p>
+            <p class="mb-1">@noiDungHienThi</p>
 
             @{
                 var medias = item.Medias?.ToList() ?? new List<JournalWeb.Models.NhatKyMedia>();
             }
 
-            @if (medias.Any())
+            @if (!string.IsNullOrWhiteSpace(moodLabel) || medias.Any())
             {
                 <div class="media-grid">
+                    @if (!string.IsNullOrWhiteSpace(moodLabel))
+                    {
+                        <div class="media-item big emotion-card" style="background:@moodBg">
+                            <div class="emotion-icon">@moodIcon</div>
+                            <div class="emotion-name">@moodLabel</div>
+                        </div>
+                    }
+
                     @for (int i = 0; i < medias.Count; i++)
                     {
                         var media = medias[i];
-                        var bigClass = i == 0 ? "big" : "";
+                        var bigClass = string.IsNullOrWhiteSpace(moodLabel) && i == 0 ? "big" : "";
 
                         <div class="media-item @bigClass">
                             @if (media.LoaiMedia == "video")

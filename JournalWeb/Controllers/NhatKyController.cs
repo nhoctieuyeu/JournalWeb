@@ -59,6 +59,8 @@ namespace JournalWeb.Controllers
             string tieuDe,
             string noiDung,
             DateTime ngayViet,
+            int? moodLevel,
+            string moodLabel,
             List<IFormFile> medias)
         {
             var userId = CheckLogin();
@@ -101,11 +103,17 @@ namespace JournalWeb.Controllers
                 }
             }
 
+            var finalNoiDung = noiDung.Trim();
+            if (moodLevel.HasValue && moodLevel.Value >= 0 && moodLevel.Value <= 6 && !string.IsNullOrWhiteSpace(moodLabel))
+            {
+                finalNoiDung = $"[[MOOD|{moodLevel.Value}|{moodLabel.Trim()}]]\n{finalNoiDung}";
+            }
+
             var nk = new NhatKy
             {
                 NguoiDungId = userId.Value,
                 TieuDe = tieuDe,
-                NoiDung = noiDung,
+                NoiDung = finalNoiDung,
                 NgayViet = ngayViet,
                 NgayTao = DateTime.Now
             };
