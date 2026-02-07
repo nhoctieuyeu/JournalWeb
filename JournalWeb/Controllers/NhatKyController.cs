@@ -3,8 +3,10 @@ using JournalWeb.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Microsoft.EntityFrameworkCore;
 using static System.Net.Mime.MediaTypeNames;
 
 namespace JournalWeb.Controllers
@@ -34,6 +36,7 @@ namespace JournalWeb.Controllers
                 return RedirectToAction("VerifyPinLogin", "Auth");
 
             var list = _context.NhatKy
+                .Include(x => x.Medias)
                 .Where(x => x.NguoiDungId == userId)
                 .OrderByDescending(x => x.NgayViet)
                 .ToList();
@@ -56,7 +59,8 @@ namespace JournalWeb.Controllers
             string tieuDe,
             string noiDung,
             DateTime ngayViet,
-            IFormFile media)
+            IFormFile media,
+            List<IFormFile> medias)
         {
             var userId = CheckLogin();
             if (!userId.HasValue)
@@ -70,16 +74,16 @@ namespace JournalWeb.Controllers
 
             string filePath = null;
             string ext = null;
+            var uploadedFiles = new List<(string FilePath, string Ext)>();
 
             if (media != null && media.Length > 0)
             {
+                var allow = new[] { ".jpg", ".jpeg", ".png", ".mp4", ".mov", ".webm" };
                 ext = Path.GetExtension(media.FileName).ToLower();
-                var allow = new[] { ".jpg", ".jpeg", ".png", ".mp4", ".mov" };
-
 
                 if (!allow.Contains(ext))
                 {
-                    ViewBag.Loi = "Chỉ cho phép ảnh hoặc video";
+                    ViewBag.Loi = "Chỉ cho phép ảnh hoặc video ngắn (.jpg, .jpeg, .png, .mp4, .mov, .webm)";
                     return View();
                 }
 
@@ -95,6 +99,40 @@ namespace JournalWeb.Controllers
                 }
 
                 filePath = "/uploads/" + fileName;
+                uploadedFiles.Add((filePath, ext));
+            }
+
+            if (medias != null && medias.Any(f => f != null && f.Length > 0))
+            {
+                var allow = new[] { ".jpg", ".jpeg", ".png", ".mp4", ".mov", ".webm" };
+
+                foreach (var f in medias)
+                {
+                    if (f != null && f.Length > 0)
+                    {
+                        ext = Path.GetExtension(f.FileName).ToLower();
+
+                        if (!allow.Contains(ext))
+                        {
+                            ViewBag.Loi = "Chỉ cho phép ảnh hoặc video ngắn (.jpg, .jpeg, .png, .mp4, .mov, .webm)";
+                            return View();
+                        }
+
+                        var folder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads");
+                        Directory.CreateDirectory(folder);
+
+                        var fileName = Guid.NewGuid() + ext;
+                        var fullPath = Path.Combine(folder, fileName);
+
+                        using (var stream = new FileStream(fullPath, FileMode.Create))
+                        {
+                            f.CopyTo(stream);
+                        }
+
+                        var mediaPath = "/uploads/" + fileName;
+                        uploadedFiles.Add((mediaPath, ext));
+                    }
+                }
             }
 
             var nk = new NhatKy
@@ -110,22 +148,25 @@ namespace JournalWeb.Controllers
             _context.SaveChanges();
 
             // ===== LƯU MEDIA RIÊNG =====
-            if (filePath != null)
+            if (uploadedFiles.Any())
             {
-                var mediaEntity = new NhatKyMedia
+                foreach (var file in uploadedFiles)
                 {
-                    NhatKyId = nk.NhatKyId,
-                    DuongDanFile = filePath,
-                    LoaiMedia = ext.Contains("mp4") || ext.Contains("mov")
-                        ? "video"
-                        : "image",
-                    NgayTao = DateTime.Now
-                };
+                    var mediaEntity = new NhatKyMedia
+                    {
+                        NhatKyId = nk.NhatKyId,
+                        DuongDanFile = file.FilePath,
+                        LoaiMedia = file.Ext.Contains("mp4") || file.Ext.Contains("mov") || file.Ext.Contains("webm")
+                            ? "video"
+                            : "image",
+                        NgayTao = DateTime.Now
+                    };
 
-                _context.NhatKyMedia.Add(mediaEntity);
+                    _context.NhatKyMedia.Add(mediaEntity);
+                }
+
                 _context.SaveChanges();
             }
-
 
             return RedirectToAction("Index");
         }

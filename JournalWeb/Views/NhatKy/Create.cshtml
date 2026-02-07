@@ -8,7 +8,7 @@
     }
 
     .editor {
-        max-width: 600px;
+        max-width: 640px;
         margin: auto;
         padding: 15px;
     }
@@ -17,6 +17,7 @@
         display: flex;
         align-items: center;
         gap: 10px;
+        margin-bottom: 8px;
     }
 
         .header a {
@@ -28,10 +29,69 @@
         border-radius: 12px;
     }
 
-    .media-preview img, video {
+    .media-preview img,
+    video {
         max-width: 100%;
         border-radius: 12px;
         margin-top: 10px;
+    }
+
+    .upload-tip {
+        font-size: 13px;
+        color: #6c757d;
+        margin-top: 4px;
+    }
+
+    .media-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+        margin-top: 12px;
+    }
+
+    .media-item {
+        position: relative;
+        border-radius: 14px;
+        overflow: hidden;
+        background: #eef2f7;
+        min-height: 100px;
+    }
+
+        .media-item.big {
+            grid-row: span 2;
+            min-height: 210px;
+        }
+
+        .media-item img,
+        .media-item video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+    .media-type {
+        position: absolute;
+        right: 8px;
+        bottom: 8px;
+        background: rgba(0, 0, 0, 0.55);
+        color: #fff;
+        font-size: 12px;
+        padding: 2px 7px;
+        border-radius: 20px;
+    }
+
+    @media (max-width: 576px) {
+        .editor
+
+    {
+        padding: 12px;
+    }
+
+    .media-grid {
+        gap: 6px;
+    }
+
     }
 </style>
 
@@ -39,6 +99,7 @@
     <div class="header">
         <a href="@Url.Action("Index")">⬅</a>
         <h5>Nhật ký mới</h5>
+        <h5 class="mb-0">Nhật ký mới</h5>
     </div>
 
     <form method="post" enctype="multipart/form-data">
@@ -52,14 +113,17 @@
                   placeholder="Hôm nay bạn cảm thấy thế nào?"></textarea>
 
         <input type="file" name="media" class="form-control my-2"
-               accept="image/*,video/*"
-               onchange="preview(this)" />
+               accept="image/*,video/*" onchange="preview(this)" />
+        <input type="file" name="medias" class="form-control my-2"
+               accept="image/*,video/*" multiple onchange="preview(this.files)" />
 
         <div class="media-preview" id="preview"></div>
+        <div class="upload-tip">Bạn có thể chọn nhiều ảnh + video ngắn cùng lúc.</div>
 
         @if (ViewBag.Loi != null)
         {
             <div class="text-danger">@ViewBag.Loi</div>
+            <div class="text-danger mt-2">@ViewBag.Loi</div>
         }
 
         <button class="btn btn-primary w-100 mt-3">💾 Lưu nhật ký</button>
@@ -67,23 +131,51 @@
 </div>
 
 <script>
-function preview(input) {
-    const p = document.getElementById("preview");
-    p.innerHTML = "";
+    function preview(input) {
+        const p = document.getElementById("preview");
+        p.innerHTML = "";
 
-    const file = input.files[0];
-    if (!file) return;
+        // Nếu truyền vào là input element
+        if (input instanceof HTMLInputElement) {
+            const files = input.files;
+            if (!files || !files.length) return;
+            // Nếu là input đơn
+            if (files.length === 1) {
+                const file = files[0];
+                if (file.type.startsWith("image")) {
+                    const img = document.createElement("img");
+                    img.src = URL.createObjectURL(file);
+                    p.appendChild(img);
+                } else if (file.type.startsWith("video")) {
+                    const v = document.createElement("video");
+                    v.src = URL.createObjectURL(file);
+                    v.controls = true;
+                    p.appendChild(v);
+                }
+            } else {
+                // Nhiều file
+                Array.from(files).forEach((file, index) => {
+                    const item = document.createElement("div");
+                    item.className = "media-item" + (index === 0 ? " big" : "");
+                    if (file.type.startsWith("image")) {
+                        const img = document.createElement("img");
+                        img.src = URL.createObjectURL(file);
+                        item.appendChild(img);
+                    } else if (file.type.startsWith("video")) {
+                        const v = document.createElement("video");
+                        v.src = URL.createObjectURL(file);
+                        v.controls = true;
+                        item.appendChild(v);
+                    }
 
-    if (file.type.startsWith("image")) {
-        const img = document.createElement("img");
-        img.src = URL.createObjectURL(file);
-        p.appendChild(img);
+                    const badge = document.createElement("div");
+                    badge.className = "media-type";
+                    badge.innerText = file.type.startsWith("video") ? "Video" : "Ảnh";
+                    item.appendChild(badge);
+
+                    p.appendChild(item);
+                });
+            }
+        }
     }
-    else if (file.type.startsWith("video")) {
-        const v = document.createElement("video");
-        v.src = URL.createObjectURL(file);
-        v.controls = true;
-        p.appendChild(v);
-    }
-}
 </script>
