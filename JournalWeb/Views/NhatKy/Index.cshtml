@@ -68,10 +68,11 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        text-decoration: none;
         background-color: #007bff;
         color: #fff;
+        text-decoration: none;
         box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        z-index: 999;
     }
 </style>
 
@@ -82,31 +83,34 @@
             <small class="text-muted">
                 @(item.NgayViet?.ToString("dd/MM/yyyy") ?? "")
             </small>
-
             @if (!string.IsNullOrWhiteSpace(item.TieuDe))
             {
                 <h6 class="mt-1">@item.TieuDe</h6>
             }
-
             <p>@item.NoiDung</p>
 
-            @if (item.Medias != null && item.Medias.Any())
+            @{
+                var medias = item.Medias?.ToList() ?? new List<JournalWeb.Models.NhatKyMedia>();
+            }
+
+            @if (medias.Any())
             {
+                // Lặp qua từng media
                 <div class="media-grid">
-                    @for (int i = 0; i < item.Medias.Count; i++)
+                    @for (int i = 0; i < medias.Count; i++)
                     {
-                        var media = item.Medias[i];
+                        var m = medias[i];
                         var bigClass = i == 0 ? "big" : "";
 
                         <div class="media-item @bigClass">
-                            @if (media.LoaiMedia == "video")
+                            @if (m.LoaiMedia == "video")
                             {
-                                <video src="@media.DuongDanFile" controls playsinline></video>
+                                <video src="@m.DuongDanFile" controls playsinline></video>
                                 <span class="media-tag">Video</span>
                             }
                             else
                             {
-                                <img src="@media.DuongDanFile" alt="media" />
+                                <img src="@m.DuongDanFile" alt="media" />
                                 <span class="media-tag">Ảnh</span>
                             }
                         </div>
@@ -117,4 +121,4 @@
     }
 </div>
 
-<a href="@Url.Action("Create")" class="btn btn-primary fab">+</a>
+<a href="@Url.Action("Create")" class="fab">+</a>

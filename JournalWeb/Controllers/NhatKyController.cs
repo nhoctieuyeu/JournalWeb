@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace JournalWeb.Controllers
 {
@@ -72,69 +71,62 @@ namespace JournalWeb.Controllers
                 return View();
             }
 
-            string filePath = null;
-            string ext = null;
-            var uploadedFiles = new List<(string FilePath, string Ext)>();
+            var allowExtensions = new[] { ".jpg", ".jpeg", ".png", ".mp4", ".mov", ".webm" };
+            var folder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads");
+            Directory.CreateDirectory(folder);
 
+            var uploadedFiles = new List<(string FilePath, string Ext)>();
+            string mainFilePath = null;
+            string mainExt = null;
+
+            // Xử lý tải media chính
             if (media != null && media.Length > 0)
             {
-                var allow = new[] { ".jpg", ".jpeg", ".png", ".mp4", ".mov", ".webm" };
-                ext = Path.GetExtension(media.FileName).ToLower();
+                mainExt = Path.GetExtension(media.FileName).ToLower();
 
-                if (!allow.Contains(ext))
+                if (!allowExtensions.Contains(mainExt))
                 {
                     ViewBag.Loi = "Chỉ cho phép ảnh hoặc video ngắn (.jpg, .jpeg, .png, .mp4, .mov, .webm)";
                     return View();
                 }
 
-                var folder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads");
-                Directory.CreateDirectory(folder);
-
-                var fileName = Guid.NewGuid() + ext;
-                var fullPath = Path.Combine(folder, fileName);
+                var mainFileName = Guid.NewGuid() + mainExt;
+                var fullPath = Path.Combine(folder, mainFileName);
 
                 using (var stream = new FileStream(fullPath, FileMode.Create))
                 {
                     media.CopyTo(stream);
                 }
 
-                filePath = "/uploads/" + fileName;
-                uploadedFiles.Add((filePath, ext));
+                mainFilePath = "/uploads/" + mainFileName;
+                uploadedFiles.Add((mainFilePath, mainExt));
             }
 
+            // Xử lý tải các medias phụ
             if (medias != null && medias.Any(f => f != null && f.Length > 0))
             {
-                var allow = new[] { ".jpg", ".jpeg", ".png", ".mp4", ".mov", ".webm" };
-
-                foreach (var f in medias)
+                foreach (var f in medias.Where(f => f != null && f.Length > 0))
                 {
-                    if (f != null && f.Length > 0)
+                    var ext = Path.GetExtension(f.FileName).ToLower();
+                    if (!allowExtensions.Contains(ext))
                     {
-                        ext = Path.GetExtension(f.FileName).ToLower();
-
-                        if (!allow.Contains(ext))
-                        {
-                            ViewBag.Loi = "Chỉ cho phép ảnh hoặc video ngắn (.jpg, .jpeg, .png, .mp4, .mov, .webm)";
-                            return View();
-                        }
-
-                        var folder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads");
-                        Directory.CreateDirectory(folder);
-
-                        var fileName = Guid.NewGuid() + ext;
-                        var fullPath = Path.Combine(folder, fileName);
-
-                        using (var stream = new FileStream(fullPath, FileMode.Create))
-                        {
-                            f.CopyTo(stream);
-                        }
-
-                        var mediaPath = "/uploads/" + fileName;
-                        uploadedFiles.Add((mediaPath, ext));
+                        ViewBag.Loi = "Chỉ cho phép ảnh hoặc video ngắn (.jpg, .jpeg, .png, .mp4, .mov, .webm)";
+                        return View();
                     }
+
+                    var fileName = Guid.NewGuid() + ext;
+                    var fullPath = Path.Combine(folder, fileName);
+
+                    using (var stream = new FileStream(fullPath, FileMode.Create))
+                    {
+                        f.CopyTo(stream);
+                    }
+
+                    uploadedFiles.Add(("/uploads/" + fileName, ext));
                 }
             }
 
+            // Lưu nhật ký
             var nk = new NhatKy
             {
                 NguoiDungId = userId.Value,
@@ -147,7 +139,7 @@ namespace JournalWeb.Controllers
             _context.NhatKy.Add(nk);
             _context.SaveChanges();
 
-            // ===== LƯU MEDIA RIÊNG =====
+            // Lưu media liên quan
             if (uploadedFiles.Any())
             {
                 foreach (var file in uploadedFiles)
@@ -156,15 +148,13 @@ namespace JournalWeb.Controllers
                     {
                         NhatKyId = nk.NhatKyId,
                         DuongDanFile = file.FilePath,
-                        LoaiMedia = file.Ext.Contains("mp4") || file.Ext.Contains("mov") || file.Ext.Contains("webm")
+                        LoaiMedia = file.Ext == ".mp4" || file.Ext == ".mov" || file.Ext == ".webm"
                             ? "video"
                             : "image",
                         NgayTao = DateTime.Now
                     };
-
                     _context.NhatKyMedia.Add(mediaEntity);
                 }
-
                 _context.SaveChanges();
             }
 

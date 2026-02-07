@@ -29,8 +29,7 @@
         border-radius: 12px;
     }
 
-    .media-preview img,
-    video {
+    .media-preview img, .media-preview video {
         max-width: 100%;
         border-radius: 12px;
         margin-top: 10px;
@@ -99,7 +98,6 @@
     <div class="header">
         <a href="@Url.Action("Index")">⬅</a>
         <h5>Nhật ký mới</h5>
-        <h5 class="mb-0">Nhật ký mới</h5>
     </div>
 
     <form method="post" enctype="multipart/form-data">
@@ -112,10 +110,7 @@
                   name="noiDung"
                   placeholder="Hôm nay bạn cảm thấy thế nào?"></textarea>
 
-        <input type="file" name="media" class="form-control my-2"
-               accept="image/*,video/*" onchange="preview(this)" />
-        <input type="file" name="medias" class="form-control my-2"
-               accept="image/*,video/*" multiple onchange="preview(this.files)" />
+        <input type="file" name="medias" class="form-control my-2" accept="image/*,video/*" multiple onchange="preview(this.files)" />
 
         <div class="media-preview" id="preview"></div>
         <div class="upload-tip">Bạn có thể chọn nhiều ảnh + video ngắn cùng lúc.</div>
@@ -123,7 +118,6 @@
         @if (ViewBag.Loi != null)
         {
             <div class="text-danger">@ViewBag.Loi</div>
-            <div class="text-danger mt-2">@ViewBag.Loi</div>
         }
 
         <button class="btn btn-primary w-100 mt-3">💾 Lưu nhật ký</button>
@@ -131,51 +125,35 @@
 </div>
 
 <script>
-    function preview(input) {
-        const p = document.getElementById("preview");
-        p.innerHTML = "";
+    function preview(files) {
+        const container = document.getElementById("preview");
+        container.innerHTML = "";
 
-        // Nếu truyền vào là input element
-        if (input instanceof HTMLInputElement) {
-            const files = input.files;
-            if (!files || !files.length) return;
-            // Nếu là input đơn
-            if (files.length === 1) {
-                const file = files[0];
-                if (file.type.startsWith("image")) {
-                    const img = document.createElement("img");
-                    img.src = URL.createObjectURL(file);
-                    p.appendChild(img);
-                } else if (file.type.startsWith("video")) {
-                    const v = document.createElement("video");
-                    v.src = URL.createObjectURL(file);
-                    v.controls = true;
-                    p.appendChild(v);
-                }
-            } else {
-                // Nhiều file
-                Array.from(files).forEach((file, index) => {
-                    const item = document.createElement("div");
-                    item.className = "media-item" + (index === 0 ? " big" : "");
-                    if (file.type.startsWith("image")) {
-                        const img = document.createElement("img");
-                        img.src = URL.createObjectURL(file);
-                        item.appendChild(img);
-                    } else if (file.type.startsWith("video")) {
-                        const v = document.createElement("video");
-                        v.src = URL.createObjectURL(file);
-                        v.controls = true;
-                        item.appendChild(v);
-                    }
+        if (!files || files.length === 0) return;
 
-                    const badge = document.createElement("div");
-                    badge.className = "media-type";
-                    badge.innerText = file.type.startsWith("video") ? "Video" : "Ảnh";
-                    item.appendChild(badge);
+        Array.from(files).forEach((file, index) => {
+            const item = document.createElement("div");
+            item.className = "media-item" + (index === 0 ? " big" : "");
 
-                    p.appendChild(item);
-                });
+            if (file.type.startsWith("image")) {
+                const img = document.createElement("img");
+                img.src = URL.createObjectURL(file);
+                item.appendChild(img);
+            } else if (file.type.startsWith("video")) {
+                const v = document.createElement("video");
+                v.src = URL.createObjectURL(file);
+                v.controls = true;
+                v.muted = true;
+                v.playsInline = true;
+                item.appendChild(v);
             }
-        }
+
+            const badge = document.createElement("div");
+            badge.className = "media-type";
+            badge.innerText = file.type.startsWith("video") ? "Video" : "Ảnh";
+            item.appendChild(badge);
+
+            container.appendChild(item);
+        });
     }
 </script>
