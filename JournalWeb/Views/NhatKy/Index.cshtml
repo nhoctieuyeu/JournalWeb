@@ -161,7 +161,23 @@
         var moodLevelRaw = "";
         var moodBg = "";
 
-        if (noiDungHienThi.StartsWith("[[MOOD|"))
+        var camXucRaw = item.CamXuc ?? "";
+        if (!string.IsNullOrWhiteSpace(camXucRaw))
+        {
+            var splitCamXuc = camXucRaw.IndexOf('|');
+            if (splitCamXuc > -1)
+            {
+                moodLevelRaw = camXucRaw.Substring(0, splitCamXuc);
+                moodLabel = camXucRaw.Substring(splitCamXuc + 1);
+            }
+            else
+            {
+                moodLevelRaw = "3";
+                moodLabel = camXucRaw;
+            }
+        }
+
+        if (string.IsNullOrWhiteSpace(moodLabel) && noiDungHienThi.StartsWith("[[MOOD|"))
         {
             var end = noiDungHienThi.IndexOf("]]", StringComparison.Ordinal);
             if (end > 0)
@@ -172,20 +188,22 @@
                 {
                     moodLevelRaw = token.Substring(0, splitIndex);
                     moodLabel = token.Substring(splitIndex + 1);
-
-                    switch (moodLevelRaw)
-                    {
-                        case "0": moodBg = "radial-gradient(circle at 50% 25%, #d9d2ef, #bcb0e3)"; break;
-                        case "1": moodBg = "radial-gradient(circle at 50% 25%, #d7e2fb, #beccef)"; break;
-                        case "2": moodBg = "radial-gradient(circle at 50% 25%, #dff0f8, #cbdeee)"; break;
-                        case "3": moodBg = "radial-gradient(circle at 50% 25%, #e0eef2, #c9dde2)"; break;
-                        case "4": moodBg = "radial-gradient(circle at 50% 25%, #e4f5d8, #cce6ba)"; break;
-                        case "5": moodBg = "radial-gradient(circle at 50% 25%, #f9efc8, #eedca5)"; break;
-                        default: moodBg = "radial-gradient(circle at 50% 25%, #f8e4ba, #f0cf96)"; break;
-                    }
-
                     noiDungHienThi = noiDungHienThi.Substring(end + 2).Trim();
                 }
+            }
+        }
+
+        if (!string.IsNullOrWhiteSpace(moodLabel))
+        {
+            switch (moodLevelRaw)
+            {
+                case "0": moodBg = "radial-gradient(circle at 50% 25%, #d9d2ef, #bcb0e3)"; break;
+                case "1": moodBg = "radial-gradient(circle at 50% 25%, #d7e2fb, #beccef)"; break;
+                case "2": moodBg = "radial-gradient(circle at 50% 25%, #dff0f8, #cbdeee)"; break;
+                case "3": moodBg = "radial-gradient(circle at 50% 25%, #e0eef2, #c9dde2)"; break;
+                case "4": moodBg = "radial-gradient(circle at 50% 25%, #e4f5d8, #cce6ba)"; break;
+                case "5": moodBg = "radial-gradient(circle at 50% 25%, #f9efc8, #eedca5)"; break;
+                default: moodBg = "radial-gradient(circle at 50% 25%, #f8e4ba, #f0cf96)"; break;
             }
         }
 

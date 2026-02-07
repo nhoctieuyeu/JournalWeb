@@ -103,11 +103,15 @@ namespace JournalWeb.Controllers
             }
 
             var finalNoiDung = noiDung.Trim();
-            if (moodLevel.HasValue && moodLevel.Value >= 0 && moodLevel.Value <= 6 && !string.IsNullOrWhiteSpace(moodLabel))
-            {
-                var safeMoodLabel = moodLabel.Trim().Replace("|", "/").Replace("]", "").Replace("[", "");
-                finalNoiDung = $"[[MOOD|{moodLevel.Value}|{safeMoodLabel}]]\n{finalNoiDung}";
-            }
+            string safeMoodLabel = null;
+            if (!string.IsNullOrWhiteSpace(moodLabel))
+                safeMoodLabel = moodLabel.Trim().Replace("|", "/").Replace("]", "").Replace("[", "");
+
+            string camXuc = null;
+            if (moodLevel.HasValue && moodLevel.Value >= 0 && moodLevel.Value <= 6 && !string.IsNullOrWhiteSpace(safeMoodLabel))
+                camXuc = $"{moodLevel.Value}|{safeMoodLabel}";
+            else if (!string.IsNullOrWhiteSpace(safeMoodLabel))
+                camXuc = safeMoodLabel;
 
             var nk = new NhatKy
             {
@@ -115,7 +119,10 @@ namespace JournalWeb.Controllers
                 TieuDe = tieuDe,
                 NoiDung = finalNoiDung,
                 NgayViet = ngayViet,
-                NgayTao = DateTime.Now
+                CamXuc = camXuc,
+                IsRiengTu = false,
+                NgayTao = DateTime.Now,
+                NgayCapNhat = DateTime.Now
             };
 
             _context.NhatKy.Add(nk);
