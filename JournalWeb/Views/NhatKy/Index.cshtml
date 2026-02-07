@@ -52,21 +52,105 @@
     }
 
     .emotion-card {
+        color: #2a2d47;
+        position: relative;
+    }
+
+    .emotion-art {
+        width: 100%;
+        height: 100%;
         display: flex;
         align-items: center;
         justify-content: center;
-        flex-direction: column;
-        color: #2a2d47;
     }
 
-    .emotion-icon {
-        font-size: 44px;
-        line-height: 1;
+    .emotion-shape {
+        width: 120px;
+        height: 120px;
+        position: relative;
+        --c1: #f4e8ff;
+        --c2: #caa5ff;
+        --c3: #8f67d8;
+        --c4: #fff;
+    }
+
+        .emotion-shape .layer,
+        .emotion-shape .core {
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            background: radial-gradient(circle at 35% 30%, var(--c1), var(--c2));
+            border: 1px solid color-mix(in srgb, var(--c4) 70%, var(--c3));
+        }
+
+        .emotion-shape .l1 {
+            transform: scale(1) rotate(2deg);
+        }
+
+        .emotion-shape .l2 {
+            transform: scale(.78) rotate(-7deg);
+        }
+
+        .emotion-shape .l3 {
+            transform: scale(.58) rotate(11deg);
+        }
+
+        .emotion-shape .core {
+            inset: 44%;
+            background: radial-gradient(circle at center, #fff, color-mix(in srgb, var(--c2) 75%, white));
+            border: 0;
+        }
+
+    .shape-spiky .layer, .shape-spiky .core {
+        clip-path: polygon(50% 0%, 62% 18%, 83% 10%, 78% 33%, 100% 50%, 78% 67%, 83% 90%, 62% 82%, 50% 100%, 38% 82%, 17% 90%, 22% 67%, 0% 50%, 22% 33%, 17% 10%, 38% 18%);
+        border-radius: 0;
+    }
+
+    .shape-wave .layer, .shape-wave .core {
+        border-radius: 44% 56% 47% 53% / 52% 45% 55% 48%;
+    }
+
+    .shape-soft .layer, .shape-soft .core {
+        border-radius: 50% 50% 46% 54% / 42% 58% 42% 58%;
+    }
+
+    .shape-pentagon .layer, .shape-pentagon .core {
+        clip-path: polygon(50% 2%, 95% 35%, 79% 92%, 21% 92%, 5% 35%);
+        border-radius: 0;
+    }
+
+    .shape-star .layer, .shape-star .core {
+        clip-path: polygon(50% 0%, 61% 30%, 95% 35%, 69% 56%, 78% 90%, 50% 70%, 22% 90%, 31% 56%, 5% 35%, 39% 30%);
+        border-radius: 0;
+    }
+
+    .shape-rings .layer, .shape-rings .core {
+        border-radius: 50%;
+    }
+
+    .shape-rings .l1 {
+        background: transparent;
+        border: 2px solid color-mix(in srgb, var(--c4) 85%, var(--c2));
+    }
+
+    .shape-rings .l2 {
+        inset: 13%;
+        background: transparent;
+        border: 2px solid color-mix(in srgb, var(--c4) 40%, var(--c2));
+    }
+
+    .shape-rings .l3 {
+        inset: 28%;
+        background: radial-gradient(circle at 35% 35%, color-mix(in srgb, var(--c1) 86%, white), var(--c2));
     }
 
     .emotion-name {
+        position: absolute;
+        left: 8px;
+        right: 8px;
+        bottom: 8px;
+        text-align: center;
         font-weight: 700;
-        margin-top: 4px;
         font-size: 12px;
         background: rgba(255,255,255,.65);
         padding: 2px 8px;
@@ -89,8 +173,12 @@
     {
         var noiDungHienThi = item.NoiDung ?? "";
         var moodLabel = "";
-        var moodIcon = "";
+        var moodShape = "";
         var moodBg = "";
+        var moodC1 = "";
+        var moodC2 = "";
+        var moodC3 = "";
+        var moodC4 = "";
 
         if (noiDungHienThi.StartsWith("[[MOOD|"))
         {
@@ -105,13 +193,13 @@
 
                     switch (parts[0])
                     {
-                        case "0": moodIcon = "💜"; moodBg = "radial-gradient(circle at 50% 25%, #d9d2ef, #bcb0e3)"; break;
-                        case "1": moodIcon = "🟦"; moodBg = "radial-gradient(circle at 50% 25%, #d7e2fb, #beccef)"; break;
-                        case "2": moodIcon = "🩵"; moodBg = "radial-gradient(circle at 50% 25%, #dff0f8, #cbdeee)"; break;
-                        case "3": moodIcon = "🔵"; moodBg = "radial-gradient(circle at 50% 25%, #e0eef2, #c9dde2)"; break;
-                        case "4": moodIcon = "🟢"; moodBg = "radial-gradient(circle at 50% 25%, #e4f5d8, #cce6ba)"; break;
-                        case "5": moodIcon = "💛"; moodBg = "radial-gradient(circle at 50% 25%, #f9efc8, #eedca5)"; break;
-                        default: moodIcon = "🌼"; moodBg = "radial-gradient(circle at 50% 25%, #f8e4ba, #f0cf96)"; break;
+                        case "0": moodShape = "shape-spiky"; moodBg = "radial-gradient(circle at 50% 25%, #d9d2ef, #bcb0e3)"; moodC1 = "#f3ebff"; moodC2 = "#b28cf1"; moodC3 = "#7f4cc9"; moodC4 = "#f7f3ff"; break;
+                        case "1": moodShape = "shape-wave"; moodBg = "radial-gradient(circle at 50% 25%, #d7e2fb, #beccef)"; moodC1 = "#f0f5ff"; moodC2 = "#9ab4ff"; moodC3 = "#587de8"; moodC4 = "#eff5ff"; break;
+                        case "2": moodShape = "shape-soft"; moodBg = "radial-gradient(circle at 50% 25%, #dff0f8, #cbdeee)"; moodC1 = "#ebf9ff"; moodC2 = "#8cc9f3"; moodC3 = "#4a9fdb"; moodC4 = "#f2fbff"; break;
+                        case "3": moodShape = "shape-rings"; moodBg = "radial-gradient(circle at 50% 25%, #e0eef2, #c9dde2)"; moodC1 = "#f4fdff"; moodC2 = "#9dd6e9"; moodC3 = "#73b8cf"; moodC4 = "#ffffff"; break;
+                        case "4": moodShape = "shape-pentagon"; moodBg = "radial-gradient(circle at 50% 25%, #e4f5d8, #cce6ba)"; moodC1 = "#f2ffe6"; moodC2 = "#9ee56a"; moodC3 = "#6dc539"; moodC4 = "#fcfff6"; break;
+                        case "5": moodShape = "shape-star"; moodBg = "radial-gradient(circle at 50% 25%, #f9efc8, #eedca5)"; moodC1 = "#fff7de"; moodC2 = "#ffd94d"; moodC3 = "#f0b31f"; moodC4 = "#fffdf3"; break;
+                        default: moodShape = "shape-star"; moodBg = "radial-gradient(circle at 50% 25%, #f8e4ba, #f0cf96)"; moodC1 = "#fff7e2"; moodC2 = "#ffc85c"; moodC3 = "#f09f17"; moodC4 = "#fffdf5"; break;
                     }
 
                     noiDungHienThi = noiDungHienThi.Substring(end + 2).Trim();
@@ -141,7 +229,14 @@
                     @if (!string.IsNullOrWhiteSpace(moodLabel))
                     {
                         <div class="media-item big emotion-card" style="background:@moodBg">
-                            <div class="emotion-icon">@moodIcon</div>
+                            <div class="emotion-art">
+                                <div class="emotion-shape @moodShape" style="--c1:@moodC1;--c2:@moodC2;--c3:@moodC3;--c4:@moodC4;">
+                                    <span class="layer l1"></span>
+                                    <span class="layer l2"></span>
+                                    <span class="layer l3"></span>
+                                    <span class="core"></span>
+                                </div>
+                            </div>
                             <div class="emotion-name">@moodLabel</div>
                         </div>
                     }

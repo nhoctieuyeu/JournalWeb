@@ -29,23 +29,134 @@
         border-radius: 24px;
         padding: 20px 18px 16px;
         margin-bottom: 14px;
-        background: radial-gradient(circle at 50% 25%, #efeaf8, #d7d0ee);
-        box-shadow: inset 0 0 40px rgba(255,255,255,.38);
+        background: radial-gradient(circle at 50% 25%, #e7e0f4, #cbc0e7);
+        box-shadow: inset 0 0 45px rgba(255,255,255,.4);
+        transition: .35s ease;
     }
 
-    .mood-title {
-        font-size: 38px;
-        margin-bottom: 4px;
-        text-align: center;
-        filter: drop-shadow(0 6px 12px rgba(255,255,255,.4));
+    .section-title {
+        font-weight: 700;
+        margin: 12px 0 8px;
+        color: #2f334f;
     }
 
     .mood-name {
         text-align: center;
         font-weight: 800;
-        font-size: 32px;
-        margin-bottom: 10px;
-        color: #2a2d47;
+        font-size: 46px;
+        margin: 10px 0 8px;
+        color: #20213a;
+        letter-spacing: -.5px;
+    }
+
+    .mood-art-wrap {
+        display: flex;
+        justify-content: center;
+        margin-top: 8px;
+    }
+
+    .mood-art {
+        --c1: #f4e8ff;
+        --c2: #caa5ff;
+        --c3: #8f67d8;
+        --c4: #ffffff;
+        width: 210px;
+        height: 210px;
+        position: relative;
+        filter: drop-shadow(0 18px 28px color-mix(in srgb, var(--c3) 25%, transparent));
+        animation: breath 4.2s ease-in-out infinite;
+    }
+
+        .mood-art .layer,
+        .mood-art .core {
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            background: radial-gradient(circle at 35% 30%, var(--c1), var(--c2));
+            border: 1.5px solid color-mix(in srgb, var(--c4) 70%, var(--c3));
+        }
+
+        .mood-art .l1 {
+            transform: scale(1) rotate(2deg);
+            opacity: .92;
+        }
+
+        .mood-art .l2 {
+            transform: scale(.78) rotate(-7deg);
+            opacity: .92;
+        }
+
+        .mood-art .l3 {
+            transform: scale(.58) rotate(11deg);
+            opacity: .95;
+        }
+
+        .mood-art .core {
+            inset: 44%;
+            background: radial-gradient(circle at center, #fff, color-mix(in srgb, var(--c2) 75%, white));
+            border: 0;
+            box-shadow: 0 0 16px color-mix(in srgb, var(--c3) 40%, transparent);
+        }
+
+    .shape-spiky .layer,
+    .shape-spiky .core {
+        clip-path: polygon(50% 0%, 62% 18%, 83% 10%, 78% 33%, 100% 50%, 78% 67%, 83% 90%, 62% 82%, 50% 100%, 38% 82%, 17% 90%, 22% 67%, 0% 50%, 22% 33%, 17% 10%, 38% 18%);
+        border-radius: 0;
+    }
+
+    .shape-wave .layer,
+    .shape-wave .core {
+        border-radius: 44% 56% 47% 53% / 52% 45% 55% 48%;
+    }
+
+    .shape-soft .layer,
+    .shape-soft .core {
+        border-radius: 50% 50% 46% 54% / 42% 58% 42% 58%;
+    }
+
+    .shape-pentagon .layer,
+    .shape-pentagon .core {
+        clip-path: polygon(50% 2%, 95% 35%, 79% 92%, 21% 92%, 5% 35%);
+        border-radius: 0;
+    }
+
+    .shape-star .layer,
+    .shape-star .core {
+        clip-path: polygon(50% 0%, 61% 30%, 95% 35%, 69% 56%, 78% 90%, 50% 70%, 22% 90%, 31% 56%, 5% 35%, 39% 30%);
+        border-radius: 0;
+    }
+
+    .shape-rings .layer,
+    .shape-rings .core {
+        clip-path: none;
+        border-radius: 50%;
+    }
+
+    .shape-rings .l1 {
+        background: transparent;
+        border: 2px solid color-mix(in srgb, var(--c4) 85%, var(--c2));
+    }
+
+    .shape-rings .l2 {
+        inset: 13%;
+        background: transparent;
+        border: 2px solid color-mix(in srgb, var(--c4) 40%, var(--c2));
+    }
+
+    .shape-rings .l3 {
+        inset: 28%;
+        background: radial-gradient(circle at 35% 35%, color-mix(in srgb, var(--c1) 86%, white), var(--c2));
+        border: 1.5px solid color-mix(in srgb, var(--c4) 65%, var(--c2));
+    }
+
+    @@keyframes breath {
+        0%, 100% {
+            transform: scale(1);
+        }
+
+        50% {
+            transform: scale(1.045);
+        }
     }
 
     .mood-slider {
@@ -85,61 +196,6 @@
         font-size: 12px;
         color: #555a74;
         font-weight: 700;
-    }
-
-    .mood-ripple {
-        width: 160px;
-        height: 160px;
-        margin: 8px auto;
-        border-radius: 50%;
-        position: relative;
-        background: radial-gradient(circle at center, rgba(255,255,255,.95) 0%, rgba(255,255,255,.3) 65%, rgba(255,255,255,.08) 100%);
-        animation: pulse 3.2s ease-in-out infinite;
-    }
-
-        .mood-ripple::before,
-        .mood-ripple::after {
-            content: "";
-            position: absolute;
-            inset: -10px;
-            border-radius: 50%;
-            border: 2px solid rgba(255,255,255,.45);
-            animation: wave 3.2s linear infinite;
-        }
-
-        .mood-ripple::after {
-            animation-delay: 1.2s;
-            inset: -20px;
-        }
-
-    @@keyframes pulse {
-        0%, 100% {
-            transform: scale(1);
-            filter: saturate(100%);
-        }
-
-        50% {
-            transform: scale(1.06);
-            filter: saturate(130%);
-        }
-    }
-
-    @@keyframes wave {
-        0% {
-            transform: scale(.86);
-            opacity: .8;
-        }
-
-        100% {
-            transform: scale(1.14);
-            opacity: 0;
-        }
-    }
-
-    .section-title {
-        font-weight: 700;
-        margin: 12px 0 8px;
-        color: #2f334f;
     }
 
     .chip-wrap {
@@ -203,7 +259,7 @@
         position: absolute;
         right: 8px;
         bottom: 8px;
-        background: rgba(0, 0, 0, 0.55);
+        background: rgba(0,0,0,.55);
         color: #fff;
         font-size: 12px;
         padding: 2px 7px;
@@ -227,6 +283,20 @@
         font-size: 12px;
         padding: 3px 6px;
     }
+
+    .mini-art {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+        .mini-art .mood-art {
+            width: 120px;
+            height: 120px;
+            filter: none;
+        }
 </style>
 
 <div class="editor">
@@ -237,8 +307,16 @@
 
     <div class="mood-box" id="moodBox">
         <div class="section-title text-center">Chọn cảm giác của bạn ngay lúc này</div>
-        <div class="mood-title" id="moodIcon">💜</div>
-        <div class="mood-ripple" id="moodRipple"></div>
+
+        <div class="mood-art-wrap">
+            <div class="mood-art shape-spiky" id="moodArt">
+                <span class="layer l1"></span>
+                <span class="layer l2"></span>
+                <span class="layer l3"></span>
+                <span class="core"></span>
+            </div>
+        </div>
+
         <div class="mood-name" id="moodName">Rất khó chịu</div>
 
         <input id="moodRange" class="mood-slider" type="range" min="0" max="6" value="0" />
@@ -256,21 +334,13 @@
         <input type="hidden" name="moodLabel" id="moodLabel" value="Rất khó chịu" />
 
         <input class="form-control my-2" name="tieuDe" placeholder="Tiêu đề (không bắt buộc)" />
+        <input type="date" name="ngayViet" class="form-control my-2" value="@DateTime.Now.ToString("yyyy-MM-dd")" />
 
-        <input type="date" name="ngayViet" class="form-control my-2"
-               value="@DateTime.Now.ToString("yyyy-MM-dd")" />
+        <textarea class="form-control my-2" rows="6" name="noiDung" placeholder="Hôm nay bạn cảm thấy thế nào?"></textarea>
 
-        <textarea class="form-control my-2" rows="6"
-                  name="noiDung"
-                  placeholder="Hôm nay bạn cảm thấy thế nào?"></textarea>
-
-        <input type="file" name="medias" class="form-control my-2"
-               accept="image/*,video/*"
-               multiple
-               onchange="handleMediaSelection(this)" />
+        <input type="file" name="medias" class="form-control my-2" accept="image/*,video/*" multiple onchange="handleMediaSelection(this)" />
 
         <div class="upload-tip">Bạn có thể chọn nhiều ảnh + video ngắn cùng lúc.</div>
-
         <div class="media-grid" id="preview"></div>
 
         @if (ViewBag.Loi != null)
@@ -284,37 +354,16 @@
 
 <script>
     const moodStates = [
-        {
-            name: "Rất khó chịu", icon: "💜", bg: "radial-gradient(circle at 50% 25%, #d9d2ef, #bcb0e3)", color: "#8f67d8",
-            desc: ["Tức giận", "Lo lắng", "Sợ hãi", "Ngợp", "Xấu hổ", "Chán ghét", "Bối rối", "Nản lòng", "Khó chịu", "Ghen tị", "Căng thẳng", "Lo âu", "Tội lỗi", "Ngạc nhiên", "Vô vọng", "Bực tức", "Cô đơn", "Chán nản", "Thất vọng", "Kiệt sức", "Buồn"]
-        },
-        {
-            name: "Khó chịu", icon: "🟦", bg: "radial-gradient(circle at 50% 25%, #d7e2fb, #beccef)", color: "#6d8de5",
-            desc: ["Bực bội", "Căng thẳng", "Mệt mỏi", "Khó chịu", "Lúng túng", "Buồn chán", "Thiếu động lực", "Áp lực"]
-        },
-        {
-            name: "Hơi khó chịu", icon: "🩵", bg: "radial-gradient(circle at 50% 25%, #dff0f8, #cbdeee)", color: "#67afd9",
-            desc: ["Hơi mệt", "Lăn tăn", "Không tập trung", "Thiếu năng lượng", "Lo nhẹ", "Không thoải mái"]
-        },
-        {
-            name: "Bình thường", icon: "🔵", bg: "radial-gradient(circle at 50% 25%, #e0eef2, #c9dde2)", color: "#7aa9bf",
-            desc: ["Hài lòng", "Bình tĩnh", "Bình yên", "Lãnh đạm", "Kiệt sức"]
-        },
-        {
-            name: "Hơi dễ chịu", icon: "🟢", bg: "radial-gradient(circle at 50% 25%, #e4f5d8, #cce6ba)", color: "#80bc52",
-            desc: ["Nhẹ nhõm", "Thoải mái", "Dễ chịu", "Khá vui", "Ổn định", "Có hy vọng"]
-        },
-        {
-            name: "Dễ chịu", icon: "💛", bg: "radial-gradient(circle at 50% 25%, #f9efc8, #eedca5)", color: "#d2a328",
-            desc: ["Vui", "Lạc quan", "Hài lòng", "Tự tin", "Yêu đời", "Tích cực", "Thoả mãn"]
-        },
-        {
-            name: "Rất dễ chịu", icon: "🌼", bg: "radial-gradient(circle at 50% 25%, #f8e4ba, #f0cf96)", color: "#de9b20",
-            desc: ["Kinh ngạc", "Phấn khích", "Ngạc nhiên", "Sôi nổi", "Hạnh phúc", "Vui vẻ", "Dũng cảm", "Tự hào", "Tự tin", "Hy vọng", "Thích thú", "Thoả mãn", "Nhẹ nhõm", "Biết ơn", "Hài lòng", "Bình tĩnh", "Bình yên"]
-        }
+        { name: "Rất khó chịu", shape: "shape-spiky", bg: "radial-gradient(circle at 50% 25%, #d9d2ef, #bcb0e3)", c1: "#f3ebff", c2: "#b28cf1", c3: "#7f4cc9", c4: "#f7f3ff", desc: ["Tức giận", "Lo lắng", "Sợ hãi", "Ngợp", "Xấu hổ", "Chán ghét", "Bối rối", "Nản lòng", "Khó chịu", "Ghen tị", "Căng thẳng", "Lo âu", "Tội lỗi", "Ngạc nhiên", "Vô vọng", "Bực tức", "Cô đơn", "Chán nản", "Thất vọng", "Kiệt sức", "Buồn"] },
+        { name: "Khó chịu", shape: "shape-wave", bg: "radial-gradient(circle at 50% 25%, #d7e2fb, #beccef)", c1: "#f0f5ff", c2: "#9ab4ff", c3: "#587de8", c4: "#eff5ff", desc: ["Bực bội", "Căng thẳng", "Mệt mỏi", "Khó chịu", "Lúng túng", "Buồn chán", "Thiếu động lực", "Áp lực"] },
+        { name: "Hơi khó chịu", shape: "shape-soft", bg: "radial-gradient(circle at 50% 25%, #dff0f8, #cbdeee)", c1: "#ebf9ff", c2: "#8cc9f3", c3: "#4a9fdb", c4: "#f2fbff", desc: ["Hơi mệt", "Lăn tăn", "Không tập trung", "Thiếu năng lượng", "Lo nhẹ", "Không thoải mái"] },
+        { name: "Bình thường", shape: "shape-rings", bg: "radial-gradient(circle at 50% 25%, #e0eef2, #c9dde2)", c1: "#f4fdff", c2: "#9dd6e9", c3: "#73b8cf", c4: "#ffffff", desc: ["Hài lòng", "Bình tĩnh", "Bình yên", "Lãnh đạm", "Kiệt sức"] },
+        { name: "Hơi dễ chịu", shape: "shape-pentagon", bg: "radial-gradient(circle at 50% 25%, #e4f5d8, #cce6ba)", c1: "#f2ffe6", c2: "#9ee56a", c3: "#6dc539", c4: "#fcfff6", desc: ["Nhẹ nhõm", "Thoải mái", "Dễ chịu", "Khá vui", "Ổn định", "Có hy vọng"] },
+        { name: "Dễ chịu", shape: "shape-star", bg: "radial-gradient(circle at 50% 25%, #f9efc8, #eedca5)", c1: "#fff7de", c2: "#ffd94d", c3: "#f0b31f", c4: "#fffdf3", desc: ["Vui", "Lạc quan", "Hài lòng", "Tự tin", "Yêu đời", "Tích cực", "Thoả mãn"] },
+        { name: "Rất dễ chịu", shape: "shape-star", bg: "radial-gradient(circle at 50% 25%, #f8e4ba, #f0cf96)", c1: "#fff7e2", c2: "#ffc85c", c3: "#f09f17", c4: "#fffdf5", desc: ["Kinh ngạc", "Phấn khích", "Ngạc nhiên", "Sôi nổi", "Hạnh phúc", "Vui vẻ", "Dũng cảm", "Tự hào", "Tự tin", "Hy vọng", "Thích thú", "Thoả mãn", "Nhẹ nhõm", "Biết ơn", "Hài lòng", "Bình tĩnh", "Bình yên"] }
     ];
 
-    const impacts = ["Sức khỏe", "Thể dục", "Chăm sóc bản thân", "Sở thích", "Danh tính", "Tâm linh", "Cộng đồng", "Gia đình", "Bạn bè", "Bạn đời", "Hẹn hò", "Nhiệm vụ", "Công việc", "Giáo dục", "Du lịch", "Thời tiết", "Sự kiện hiện tại", "Tiền"];
+    const impacts = ["Sức khe", "Thể dục", "Chăm sóc bản thân", "Sở thích", "Danh tính", "Tâm linh", "Cộng đồng", "Gia đình", "Bạn bè", "Bạn đời", "Hẹn hò", "Nhiệm vụ", "Công việc", "Giáo dục", "Du lịch", "Thời tiết", "Sự kiện hiện tại", "Tiền"];
 
     const selectedFiles = [];
     const selectedDescs = new Set();
@@ -341,15 +390,21 @@
         });
     }
 
+    function applyMoodArt(el, mood) {
+        el.className = `mood-art ${mood.shape}`;
+        el.style.setProperty("--c1", mood.c1);
+        el.style.setProperty("--c2", mood.c2);
+        el.style.setProperty("--c3", mood.c3);
+        el.style.setProperty("--c4", mood.c4);
+    }
+
     function updateMoodUI(level) {
         const mood = moodStates[level];
         document.getElementById("moodName").innerText = mood.name;
-        document.getElementById("moodIcon").innerText = mood.icon;
         document.getElementById("moodBox").style.background = mood.bg;
-        const ripple = document.getElementById("moodRipple");
-        ripple.style.boxShadow = `0 0 0 1px ${mood.color}55 inset, 0 0 30px ${mood.color}33`;
         document.getElementById("moodLabel").value = mood.name;
         document.getElementById("moodLevel").value = level;
+        applyMoodArt(document.getElementById("moodArt"), mood);
 
         selectedDescs.clear();
         renderChips("moodDescWrap", mood.desc, selectedDescs);
@@ -358,12 +413,10 @@
 
     function handleMediaSelection(input) {
         if (!input || !input.files || !input.files.length) return;
-
         for (const file of input.files) {
             const isExists = selectedFiles.some(f => f.name === file.name && f.size === file.size && f.lastModified === file.lastModified);
             if (!isExists) selectedFiles.push(file);
         }
-
         syncInputFiles(input);
         renderPreview();
     }
@@ -381,6 +434,19 @@
         renderPreview();
     }
 
+    function moodMiniHtml(mood) {
+        return `
+            <div class="mini-art">
+                <div class="mood-art ${mood.shape}" style="--c1:${mood.c1};--c2:${mood.c2};--c3:${mood.c3};--c4:${mood.c4}">
+                    <span class="layer l1"></span>
+                    <span class="layer l2"></span>
+                    <span class="layer l3"></span>
+                    <span class="core"></span>
+                </div>
+            </div>
+        `;
+    }
+
     function renderPreview() {
         const p = document.getElementById("preview");
         p.innerHTML = "";
@@ -391,7 +457,7 @@
         const emotionItem = document.createElement("div");
         emotionItem.className = "media-item big emotion-cover";
         emotionItem.style.background = mood.bg;
-        emotionItem.innerHTML = `<div class="mood-title" style="margin-top:38px; font-size:56px;">${mood.icon}</div><div class="emotion-caption">${mood.name}</div>`;
+        emotionItem.innerHTML = moodMiniHtml(mood) + `<div class="emotion-caption">${mood.name}</div>`;
         p.appendChild(emotionItem);
 
         selectedFiles.forEach((file, idx) => {
