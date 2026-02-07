@@ -95,7 +95,7 @@
         <input type="file" name="medias" class="form-control my-2"
                accept="image/*,video/*"
                multiple
-               onchange="preview(this.files)" />
+               onchange="handleMediaSelection(this)" />
 
         <div class="upload-tip">Bạn có thể chọn nhiều ảnh + video ngắn cùng lúc.</div>
 
@@ -111,13 +111,51 @@
 </div>
 
 <script>
-    function preview(files) {
+    const selectedFiles = [];
+
+    function handleMediaSelection(input) {
+        if (!input || !input.files || !input.files.length) return;
+
+        for (const file of input.files) {
+            const isExists = selectedFiles.some(f =>
+                f.name === file.name &&
+                f.size === file.size &&
+                f.lastModified === file.lastModified
+            );
+
+            if (!isExists) {
+                selectedFiles.push(file);
+            }
+        }
+
+        syncInputFiles(input);
+        renderPreview();
+    }
+
+    function syncInputFiles(input) {
+        const dt = new DataTransfer();
+        selectedFiles.forEach(file => dt.items.add(file));
+        input.files = dt.files;
+    }
+
+    function removeMedia(index) {
+        selectedFiles.splice(index, 1);
+
+        const input = document.querySelector('input[name="medias"]');
+        if (input) {
+            syncInputFiles(input);
+        }
+
+        renderPreview();
+    }
+
+    function renderPreview() {
         const p = document.getElementById("preview");
         p.innerHTML = "";
 
-        if (!files || !files.length) return;
+        if (!selectedFiles.length) return;
 
-        Array.from(files).forEach((file, index) => {
+        selectedFiles.forEach((file, index) => {
             const item = document.createElement("div");
             item.className = "media-item" + (index === 0 ? " big" : "");
 
@@ -138,6 +176,17 @@
             badge.className = "media-type";
             badge.innerText = file.type.startsWith("video") ? "Video" : "Ảnh";
             item.appendChild(badge);
+
+            const removeBtn = document.createElement("button");
+            removeBtn.type = "button";
+            removeBtn.className = "btn btn-sm btn-light";
+            removeBtn.style.position = "absolute";
+            removeBtn.style.left = "8px";
+            removeBtn.style.top = "8px";
+            removeBtn.style.borderRadius = "20px";
+            removeBtn.innerText = "✕";
+            removeBtn.onclick = () => removeMedia(index);
+            item.appendChild(removeBtn);
 
             p.appendChild(item);
         });
