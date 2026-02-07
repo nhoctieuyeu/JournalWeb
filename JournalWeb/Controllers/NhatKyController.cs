@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace JournalWeb.Controllers
 {
@@ -106,7 +105,8 @@ namespace JournalWeb.Controllers
             var finalNoiDung = noiDung.Trim();
             if (moodLevel.HasValue && moodLevel.Value >= 0 && moodLevel.Value <= 6 && !string.IsNullOrWhiteSpace(moodLabel))
             {
-                finalNoiDung = $"[[MOOD|{moodLevel.Value}|{moodLabel.Trim()}]]\n{finalNoiDung}";
+                var safeMoodLabel = moodLabel.Trim().Replace("|", "/").Replace("]", "").Replace("[", "");
+                finalNoiDung = $"[[MOOD|{moodLevel.Value}|{safeMoodLabel}]]\n{finalNoiDung}";
             }
 
             var nk = new NhatKy

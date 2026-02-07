@@ -31,13 +31,25 @@
         margin-bottom: 14px;
         background: radial-gradient(circle at 50% 24%, #e5def5, #c7bbe8);
         box-shadow: inset 0 0 48px rgba(255,255,255,.42);
-        transition: .35s ease;
+        transition: background .28s linear, box-shadow .28s linear;
+        position: relative;
+        overflow: hidden;
     }
+
+        .mood-box::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, rgba(255,255,255,.23), transparent 40%, rgba(255,255,255,.08));
+            pointer-events: none;
+        }
 
     .section-title {
         font-weight: 700;
         margin: 12px 0 8px;
         color: #2f334f;
+        position: relative;
+        z-index: 1;
     }
 
     .mood-name {
@@ -47,19 +59,23 @@
         margin: 10px 0 8px;
         color: #20213a;
         letter-spacing: -.4px;
+        position: relative;
+        z-index: 1;
     }
 
     .mood-art-wrap {
         display: flex;
         justify-content: center;
         margin-top: 8px;
+        position: relative;
+        z-index: 1;
     }
 
     .mood-art {
         width: 230px;
         height: 230px;
         position: relative;
-        filter: drop-shadow(0 16px 24px rgba(0,0,0,.12));
+        filter: drop-shadow(0 16px 24px rgba(0,0,0,.14));
         animation: floatMood 4s ease-in-out infinite;
     }
 
@@ -68,6 +84,7 @@
         width: 100%;
         height: 100%;
         display: block;
+        overflow: visible;
     }
 
         .mood-svg .layer1,
@@ -107,7 +124,7 @@
         }
 
         50% {
-            transform: translateY(-3px) scale(1.015);
+            transform: translateY(-3px) scale(1.018);
         }
     }
 
@@ -149,7 +166,7 @@
 
         50% {
             opacity: 1;
-            filter: brightness(1.2);
+            filter: brightness(1.24);
         }
     }
 
@@ -160,6 +177,8 @@
         border-radius: 99px;
         background: rgba(255,255,255,.46);
         outline: none;
+        position: relative;
+        z-index: 1;
     }
 
         .mood-slider::-webkit-slider-thumb {
@@ -190,27 +209,42 @@
         font-size: 12px;
         color: #555a74;
         font-weight: 700;
+        position: relative;
+        z-index: 1;
     }
 
     .chip-wrap {
         display: flex;
         flex-wrap: wrap;
         gap: 8px;
+        position: relative;
+        z-index: 1;
     }
 
     .chip {
         border: none;
         border-radius: 999px;
-        padding: 6px 12px;
+        padding: 7px 13px;
         font-size: 13px;
-        background: rgba(255,255,255,.68);
+        background: rgba(255,255,255,.72);
         color: #2f334f;
+        transform: translateY(10px);
+        opacity: 0;
+        animation: chipIn .35s ease forwards;
+        box-shadow: 0 2px 6px rgba(0,0,0,.06);
     }
 
         .chip.active {
-            background: #2f334f;
             color: #fff;
+            box-shadow: 0 6px 16px rgba(0,0,0,.18);
         }
+
+    @@keyframes chipIn {
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
 
     textarea {
         border-radius: 12px;
@@ -307,7 +341,7 @@
 
         <div class="mood-name" id="moodName">Rất khó chịu</div>
 
-        <input id="moodRange" class="mood-slider" type="range" min="0" max="6" value="0" />
+        <input id="moodRange" class="mood-slider" type="range" min="0" max="6" step="0.01" value="0" />
         <div class="mood-label-row"><span>RẤT KHÓ CHỊU</span><span>RẤT DỄ CHỊU</span></div>
 
         <div class="section-title">Điều nào mô tả đúng nhất về cảm giác này?</div>
@@ -342,13 +376,13 @@
 
 <script>
     const moodStates = [
-        { name: "Rất khó chịu", bg: "radial-gradient(circle at 50% 25%, #d9d2ef, #bcb0e3)", c1: "#f4ebff", c2: "#c39aff", c3: "#7c4bc4", waves: 8, amp: .24, desc: ["Tức giận", "Lo lắng", "Sợ hãi", "Ngợp", "Xấu hổ", "Chán ghét", "Bối rối", "Nản lòng", "Khó chịu", "Ghen tị", "Căng thẳng", "Lo âu", "Tội lỗi", "Ngạc nhiên", "Vô vọng", "Bực tức", "Cô đơn", "Chán nản", "Thất vọng", "Kiệt sức", "Buồn"] },
-        { name: "Khó chịu", bg: "radial-gradient(circle at 50% 25%, #d7e2fb, #beccef)", c1: "#eef4ff", c2: "#9fb8ff", c3: "#5278e5", waves: 7, amp: .20, desc: ["Bực bội", "Căng thẳng", "Mệt mỏi", "Khó chịu", "Lúng túng", "Buồn chán", "Thiếu động lực", "Áp lực"] },
-        { name: "Hơi khó chịu", bg: "radial-gradient(circle at 50% 25%, #dff0f8, #cbdeee)", c1: "#ecf8ff", c2: "#92cdf5", c3: "#4a9fdb", waves: 6, amp: .17, desc: ["Hơi mệt", "Lăn tăn", "Không tập trung", "Thiếu năng lượng", "Lo nhẹ", "Không thoải mái"] },
-        { name: "Bình thường", bg: "radial-gradient(circle at 50% 25%, #e0eef2, #c9dde2)", c1: "#f6fdff", c2: "#a8dcee", c3: "#77b8cf", rings: true, desc: ["Hài lòng", "Bình tĩnh", "Bình yên", "Lãnh đạm", "Kiệt sức"] },
-        { name: "Hơi dễ chịu", bg: "radial-gradient(circle at 50% 25%, #e4f5d8, #cce6ba)", c1: "#f2ffe7", c2: "#a5e86f", c3: "#6bc436", waves: 5, amp: .13, desc: ["Nhẹ nhõm", "Thoải mái", "Dễ chịu", "Khá vui", "Ổn định", "Có hy vọng"] },
-        { name: "Dễ chịu", bg: "radial-gradient(circle at 50% 25%, #f9efc8, #eedca5)", c1: "#fff8df", c2: "#ffde58", c3: "#f0b21f", waves: 5, amp: .18, star: true, desc: ["Vui", "Lạc quan", "Hài lòng", "Tự tin", "Yêu đời", "Tích cực", "Thoả mãn"] },
-        { name: "Rất dễ chịu", bg: "radial-gradient(circle at 50% 25%, #f8e4ba, #f0cf96)", c1: "#fff7e3", c2: "#ffc75f", c3: "#f09d17", waves: 5, amp: .24, star: true, desc: ["Kinh ngạc", "Phấn khích", "Ngạc nhiên", "Sôi nổi", "Hạnh phúc", "Vui vẻ", "Dũng cảm", "Tự hào", "Tự tin", "Hy vọng", "Thích thú", "Thoả mãn", "Nhẹ nhõm", "Biết ơn", "Hài lòng", "Bình tĩnh", "Bình yên"] }
+        { name: "Rất khó chịu", top: "#d9d2ef", bottom: "#bcb0e3", c1: "#f4ebff", c2: "#c39aff", c3: "#7c4bc4", petals: 14, sharp: 2.6, amp: .26, desc: ["Tức giận", "Lo lắng", "Sợ hãi", "Ngợp", "Xấu hổ", "Chán ghét", "Bối rối", "Nản lòng", "Khó chịu", "Ghen tị", "Căng thẳng", "Lo âu", "Tội lỗi", "Ngạc nhiên", "Vô vọng", "Bực tức", "Cô đơn", "Chán nản", "Thất vọng", "Kiệt sức", "Buồn"] },
+        { name: "Khó chịu", top: "#d7e2fb", bottom: "#beccef", c1: "#eef4ff", c2: "#9fb8ff", c3: "#5278e5", petals: 11, sharp: 2.1, amp: .22, desc: ["Bực bội", "Căng thẳng", "Mệt mỏi", "Khó chịu", "Lúng túng", "Buồn chán", "Thiếu động lực", "Áp lực"] },
+        { name: "Hơi khó chịu", top: "#dff0f8", bottom: "#cbdeee", c1: "#ecf8ff", c2: "#92cdf5", c3: "#4a9fdb", petals: 8, sharp: 1.45, amp: .16, desc: ["Hơi mệt", "Lăn tăn", "Không tập trung", "Thiếu năng lượng", "Lo nhẹ", "Không thoải mái"] },
+        { name: "Bình thường", top: "#e0eef2", bottom: "#c9dde2", c1: "#f6fdff", c2: "#a8dcee", c3: "#77b8cf", rings: true, petals: 0, sharp: 1, amp: .03, desc: ["Hài lòng", "Bình tĩnh", "Bình yên", "Lãnh đạm", "Kiệt sức"] },
+        { name: "Hơi dễ chịu", top: "#e4f5d8", bottom: "#cce6ba", c1: "#f2ffe7", c2: "#a5e86f", c3: "#6bc436", petals: 5, sharp: 1.05, amp: .11, desc: ["Nhẹ nhõm", "Thoải mái", "Dễ chịu", "Khá vui", "Ổn định", "Có hy vọng"] },
+        { name: "Dễ chịu", top: "#f9efc8", bottom: "#eedca5", c1: "#fff8df", c2: "#ffde58", c3: "#f0b21f", petals: 7, sharp: 1.28, amp: .17, desc: ["Vui", "Lạc quan", "Hài lòng", "Tự tin", "Yêu đời", "Tích cực", "Thoả mãn"] },
+        { name: "Rất dễ chịu", top: "#f8e4ba", bottom: "#f0cf96", c1: "#fff7e3", c2: "#ffc75f", c3: "#f09d17", petals: 9, sharp: 0.9, amp: .22, desc: ["Kinh ngạc", "Phấn khích", "Ngạc nhiên", "Sôi nổi", "Hạnh phúc", "Vui vẻ", "Dũng cảm", "Tự hào", "Tự tin", "Hy vọng", "Thích thú", "Thoả mãn", "Nhẹ nhõm", "Biết ơn", "Hài lòng", "Bình tĩnh", "Bình yên"] }
     ];
 
     const impacts = ["Sức khỏe", "Thể dục", "Chăm sóc bản thân", "Sở thích", "Danh tính", "Tâm linh", "Cộng đồng", "Gia đình", "Bạn bè", "Bạn đời", "Hẹn hò", "Nhiệm vụ", "Công việc", "Giáo dục", "Du lịch", "Thời tiết", "Sự kiện hiện tại", "Tiền"];
@@ -357,11 +391,48 @@
     const selectedDescs = new Set();
     const selectedImpacts = new Set();
 
-    function blobPoints(radius, waves, amp, count = 220) {
+    const hexToRgb = (hex) => {
+        const n = hex.replace('#', '');
+        const num = parseInt(n, 16);
+        return { r: (num >> 16) & 255, g: (num >> 8) & 255, b: num & 255 };
+    };
+
+    const rgbToHex = ({ r, g, b }) => `#${[r,g,b].map(v => Math.max(0,Math.min(255,Math.round(v))).toString(16).padStart(2,'0')).join('')}`;
+    const lerp = (a, b, t) => a + (b - a) * t;
+
+    function lerpHex(h1, h2, t) {
+        const a = hexToRgb(h1), b = hexToRgb(h2);
+        return rgbToHex({ r: lerp(a.r,b.r,t), g: lerp(a.g,b.g,t), b: lerp(a.b,b.b,t) });
+    }
+
+    function moodInterpolated(value) {
+        const lo = Math.max(0, Math.min(6, Math.floor(value)));
+        const hi = Math.max(0, Math.min(6, Math.ceil(value)));
+        const t = value - lo;
+        const A = moodStates[lo];
+        const B = moodStates[hi];
+
+        return {
+            name: moodStates[Math.round(value)].name,
+            top: lerpHex(A.top, B.top, t),
+            bottom: lerpHex(A.bottom, B.bottom, t),
+            c1: lerpHex(A.c1, B.c1, t),
+            c2: lerpHex(A.c2, B.c2, t),
+            c3: lerpHex(A.c3, B.c3, t),
+            petals: lerp(A.petals || 0, B.petals || 0, t),
+            sharp: lerp(A.sharp || 1, B.sharp || 1, t),
+            amp: lerp(A.amp || 0, B.amp || 0, t),
+            rings: (A.rings && B.rings) || (Math.round(value) === 3)
+        };
+    }
+
+    function flowerPoints(radius, petals, amp, sharp, phase = 0, count = 260) {
         let pts = [];
         for (let i = 0; i < count; i++) {
             const t = (Math.PI * 2 * i) / count;
-            const r = radius * (1 + amp * Math.sin(waves * t));
+            const wave = Math.sin(petals * t + phase);
+            const softened = Math.sign(wave) * Math.pow(Math.abs(wave), sharp);
+            const r = radius * (1 + amp * softened);
             const x = 50 + r * Math.cos(t);
             const y = 50 + r * Math.sin(t);
             pts.push(`${x.toFixed(2)},${y.toFixed(2)}`);
@@ -369,18 +440,22 @@
         return pts.join(' ');
     }
 
-    function buildMoodSvg(mood, mini = false) {
+    function buildMoodSvg(mood, mini = false, idPrefix = "m") {
         const cls = mini ? 'mood-svg-mini' : 'mood-svg';
+        const petalBase = Math.max(4, mood.petals || 6);
+        const grad1 = `${idPrefix}-g1`;
+        const gradA = `${idPrefix}-ga`;
+        const gradB = `${idPrefix}-gb`;
+        const gradC = `${idPrefix}-gc`;
 
         if (mood.rings) {
-            return `
-            <svg class="${cls}" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            return `<svg class="${cls}" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                 <circle class="layer1" cx="50" cy="50" r="42" fill="none" stroke="${mood.c1}" stroke-width="1.2"/>
                 <circle class="layer2" cx="50" cy="50" r="31" fill="none" stroke="${mood.c2}" stroke-width="1.6"/>
-                <circle class="layer3" cx="50" cy="50" r="20" fill="url(#g1)" stroke="${mood.c3}" stroke-width="1.2"/>
+                <circle class="layer3" cx="50" cy="50" r="20" fill="url(#${grad1})" stroke="${mood.c3}" stroke-width="1.2"/>
                 <circle class="core" cx="50" cy="50" r="4.5" fill="#fff"/>
                 <defs>
-                    <radialGradient id="g1" cx="35%" cy="30%">
+                    <radialGradient id="${grad1}" cx="35%" cy="30%">
                         <stop offset="0%" stop-color="#ffffff"/>
                         <stop offset="100%" stop-color="${mood.c2}"/>
                     </radialGradient>
@@ -388,69 +463,62 @@
             </svg>`;
         }
 
-        const w = mood.waves || 6;
-        const amp1 = mood.amp || .2;
-        const amp2 = Math.max(.08, amp1 - .05);
-        const amp3 = Math.max(.05, amp2 - .03);
-        const p1 = blobPoints(38, w, amp1);
-        const p2 = blobPoints(29, w, amp2);
-        const p3 = blobPoints(20, w, amp3);
+        const p1 = flowerPoints(39, petalBase, mood.amp, mood.sharp, 0);
+        const p2 = flowerPoints(30, Math.max(3, petalBase - 1), Math.max(.04, mood.amp - .04), Math.max(.8, mood.sharp - .18), .35);
+        const p3 = flowerPoints(21, Math.max(3, petalBase - 2), Math.max(.03, mood.amp - .08), Math.max(.7, mood.sharp - .25), -.35);
 
-        return `
-        <svg class="${cls}" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        return `<svg class="${cls}" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
             <defs>
-                <radialGradient id="ga" cx="30%" cy="28%">
-                    <stop offset="0%" stop-color="#ffffff"/>
-                    <stop offset="100%" stop-color="${mood.c1}"/>
-                </radialGradient>
-                <radialGradient id="gb" cx="35%" cy="32%">
-                    <stop offset="0%" stop-color="#ffffff"/>
-                    <stop offset="100%" stop-color="${mood.c2}"/>
-                </radialGradient>
-                <radialGradient id="gc" cx="40%" cy="34%">
-                    <stop offset="0%" stop-color="#ffffff"/>
-                    <stop offset="100%" stop-color="${mood.c3}"/>
-                </radialGradient>
+                <radialGradient id="${gradA}" cx="30%" cy="28%"><stop offset="0%" stop-color="#fff"/><stop offset="100%" stop-color="${mood.c1}"/></radialGradient>
+                <radialGradient id="${gradB}" cx="35%" cy="32%"><stop offset="0%" stop-color="#fff"/><stop offset="100%" stop-color="${mood.c2}"/></radialGradient>
+                <radialGradient id="${gradC}" cx="40%" cy="34%"><stop offset="0%" stop-color="#fff"/><stop offset="100%" stop-color="${mood.c3}"/></radialGradient>
             </defs>
-            <polygon class="layer1" points="${p1}" fill="url(#ga)" stroke="${mood.c3}" stroke-opacity=".42" stroke-width=".8"/>
-            <polygon class="layer2" points="${p2}" fill="url(#gb)" stroke="${mood.c3}" stroke-opacity=".56" stroke-width=".9"/>
-            <polygon class="layer3" points="${p3}" fill="url(#gc)" stroke="${mood.c3}" stroke-opacity=".76" stroke-width="1"/>
+            <polygon class="layer1" points="${p1}" fill="url(#${gradA})" stroke="${mood.c3}" stroke-opacity=".45" stroke-width=".9"/>
+            <polygon class="layer2" points="${p2}" fill="url(#${gradB})" stroke="${mood.c3}" stroke-opacity=".58" stroke-width="1"/>
+            <polygon class="layer3" points="${p3}" fill="url(#${gradC})" stroke="${mood.c3}" stroke-opacity=".78" stroke-width="1.1"/>
             <circle class="core" cx="50" cy="50" r="2.8" fill="#fff"/>
         </svg>`;
     }
 
-    function renderChips(containerId, items, targetSet) {
+    function renderChips(containerId, items, targetSet, activeColor) {
         const wrap = document.getElementById(containerId);
         wrap.innerHTML = "";
-        items.forEach(text => {
+        items.forEach((text, idx) => {
             const chip = document.createElement("button");
             chip.type = "button";
             chip.className = "chip";
+            chip.style.animationDelay = `${idx * 22}ms`;
             chip.innerText = text;
             chip.onclick = () => {
                 if (targetSet.has(text)) {
                     targetSet.delete(text);
                     chip.classList.remove("active");
+                    chip.style.background = "rgba(255,255,255,.72)";
                 } else {
                     targetSet.add(text);
                     chip.classList.add("active");
+                    chip.style.background = activeColor;
                 }
             };
             wrap.appendChild(chip);
         });
     }
 
-    function updateMoodUI(level) {
-        const mood = moodStates[level];
+    function updateMoodUI(rawValue) {
+        const mood = moodInterpolated(rawValue);
+        const step = Math.round(rawValue);
+
+        const box = document.getElementById("moodBox");
+        box.style.background = `radial-gradient(circle at 50% 24%, ${mood.top}, ${mood.bottom})`;
+
         document.getElementById("moodName").innerText = mood.name;
-        document.getElementById("moodBox").style.background = mood.bg;
-        document.getElementById("moodLabel").value = mood.name;
-        document.getElementById("moodLevel").value = level;
-        document.getElementById("moodArt").innerHTML = buildMoodSvg(mood);
+        document.getElementById("moodLabel").value = moodStates[step].name;
+        document.getElementById("moodLevel").value = step;
+        document.getElementById("moodArt").innerHTML = buildMoodSvg(mood, false, "main");
 
         selectedDescs.clear();
-        renderChips("moodDescWrap", mood.desc, selectedDescs);
-        renderChips("moodImpactWrap", impacts, selectedImpacts);
+        renderChips("moodDescWrap", moodStates[step].desc, selectedDescs, mood.c3);
+        renderChips("moodImpactWrap", impacts, selectedImpacts, mood.c3);
     }
 
     function handleMediaSelection(input) {
@@ -477,19 +545,19 @@
     }
 
     function moodMiniHtml(mood) {
-        return `<div class="mini-art">${buildMoodSvg(mood, true)}</div>`;
+        return `<div class="mini-art">${buildMoodSvg(mood, true, "preview")}</div>`;
     }
 
     function renderPreview() {
         const p = document.getElementById("preview");
         p.innerHTML = "";
 
-        const moodLevel = Number(document.getElementById("moodLevel").value || 0);
-        const mood = moodStates[moodLevel];
+        const raw = Number(document.getElementById("moodRange").value || 0);
+        const mood = moodInterpolated(raw);
 
         const emotionItem = document.createElement("div");
         emotionItem.className = "media-item big emotion-cover";
-        emotionItem.style.background = mood.bg;
+        emotionItem.style.background = `radial-gradient(circle at 50% 24%, ${mood.top}, ${mood.bottom})`;
         emotionItem.innerHTML = moodMiniHtml(mood) + `<div class="emotion-caption">${mood.name}</div>`;
         p.appendChild(emotionItem);
 
@@ -531,7 +599,8 @@
     }
 
     document.getElementById("moodRange").addEventListener("input", (e) => {
-        updateMoodUI(Number(e.target.value));
+        const value = Number(e.target.value);
+        updateMoodUI(value);
         renderPreview();
     });
 

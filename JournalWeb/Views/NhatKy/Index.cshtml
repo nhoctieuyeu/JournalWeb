@@ -167,13 +167,13 @@
             if (end > 0)
             {
                 var token = noiDungHienThi.Substring(7, end - 7);
-                var parts = token.Split('|');
-                if (parts.Length >= 2)
+                var splitIndex = token.IndexOf('|');
+                if (splitIndex > -1)
                 {
-                    moodLevelRaw = parts[0];
-                    moodLabel = parts[1];
+                    moodLevelRaw = token.Substring(0, splitIndex);
+                    moodLabel = token.Substring(splitIndex + 1);
 
-                    switch (parts[0])
+                    switch (moodLevelRaw)
                     {
                         case "0": moodBg = "radial-gradient(circle at 50% 25%, #d9d2ef, #bcb0e3)"; break;
                         case "1": moodBg = "radial-gradient(circle at 50% 25%, #d7e2fb, #beccef)"; break;
@@ -244,20 +244,22 @@
 
 <script>
     const moodPalette = {
-        "0": { c1: "#f4ebff", c2: "#c39aff", c3: "#7c4bc4", waves: 8, amp: .24 },
-        "1": { c1: "#eef4ff", c2: "#9fb8ff", c3: "#5278e5", waves: 7, amp: .20 },
-        "2": { c1: "#ecf8ff", c2: "#92cdf5", c3: "#4a9fdb", waves: 6, amp: .17 },
+        "0": { c1: "#f4ebff", c2: "#c39aff", c3: "#7c4bc4", petals: 14, sharp: 2.6, amp: .26 },
+        "1": { c1: "#eef4ff", c2: "#9fb8ff", c3: "#5278e5", petals: 11, sharp: 2.1, amp: .22 },
+        "2": { c1: "#ecf8ff", c2: "#92cdf5", c3: "#4a9fdb", petals: 8, sharp: 1.45, amp: .16 },
         "3": { c1: "#f6fdff", c2: "#a8dcee", c3: "#77b8cf", rings: true },
-        "4": { c1: "#f2ffe7", c2: "#a5e86f", c3: "#6bc436", waves: 5, amp: .13 },
-        "5": { c1: "#fff8df", c2: "#ffde58", c3: "#f0b21f", waves: 5, amp: .18 },
-        "6": { c1: "#fff7e3", c2: "#ffc75f", c3: "#f09d17", waves: 5, amp: .24 }
+        "4": { c1: "#f2ffe7", c2: "#a5e86f", c3: "#6bc436", petals: 5, sharp: 1.05, amp: .11 },
+        "5": { c1: "#fff8df", c2: "#ffde58", c3: "#f0b21f", petals: 7, sharp: 1.28, amp: .17 },
+        "6": { c1: "#fff7e3", c2: "#ffc75f", c3: "#f09d17", petals: 9, sharp: 0.9, amp: .22 }
     };
 
-    function blobPoints(radius, waves, amp, count = 180) {
+    function flowerPoints(radius, petals, amp, sharp, phase = 0, count = 220) {
         let pts = [];
         for (let i = 0; i < count; i++) {
             const t = (Math.PI * 2 * i) / count;
-            const r = radius * (1 + amp * Math.sin(waves * t));
+            const wave = Math.sin(petals * t + phase);
+            const softened = Math.sign(wave) * Math.pow(Math.abs(wave), sharp);
+            const r = radius * (1 + amp * softened);
             const x = 50 + r * Math.cos(t);
             const y = 50 + r * Math.sin(t);
             pts.push(`${x.toFixed(2)},${y.toFixed(2)}`);
@@ -265,37 +267,42 @@
         return pts.join(' ');
     }
 
-    function moodSvg(mood) {
+    function moodSvg(mood, idPrefix) {
+        const grad1 = `${idPrefix}-g1`;
+        const gradA = `${idPrefix}-ga`;
+        const gradB = `${idPrefix}-gb`;
+        const gradC = `${idPrefix}-gc`;
+
         if (mood.rings) {
             return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                 <circle class="layer1" cx="50" cy="50" r="42" fill="none" stroke="${mood.c1}" stroke-width="1.2"/>
                 <circle class="layer2" cx="50" cy="50" r="31" fill="none" stroke="${mood.c2}" stroke-width="1.6"/>
-                <circle class="layer3" cx="50" cy="50" r="20" fill="url(#ig1)" stroke="${mood.c3}" stroke-width="1.2"/>
+                <circle class="layer3" cx="50" cy="50" r="20" fill="url(#${grad1})" stroke="${mood.c3}" stroke-width="1.2"/>
                 <circle class="core" cx="50" cy="50" r="4.5" fill="#fff"/>
-                <defs><radialGradient id="ig1" cx="35%" cy="30%"><stop offset="0%" stop-color="#fff"/><stop offset="100%" stop-color="${mood.c2}"/></radialGradient></defs>
+                <defs><radialGradient id="${grad1}" cx="35%" cy="30%"><stop offset="0%" stop-color="#fff"/><stop offset="100%" stop-color="${mood.c2}"/></radialGradient></defs>
             </svg>`;
         }
 
-        const p1 = blobPoints(38, mood.waves || 6, mood.amp || .2);
-        const p2 = blobPoints(29, mood.waves || 6, Math.max(.08, (mood.amp || .2) - .05));
-        const p3 = blobPoints(20, mood.waves || 6, Math.max(.05, (mood.amp || .2) - .08));
+        const p1 = flowerPoints(38, mood.petals || 8, mood.amp || .18, mood.sharp || 1.4, 0);
+        const p2 = flowerPoints(29, Math.max(4, (mood.petals || 8) - 1), Math.max(.05, (mood.amp || .18) - .04), Math.max(.8, (mood.sharp || 1.4) - .15), .3);
+        const p3 = flowerPoints(20, Math.max(4, (mood.petals || 8) - 2), Math.max(.04, (mood.amp || .18) - .08), Math.max(.7, (mood.sharp || 1.4) - .22), -.3);
 
         return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
             <defs>
-                <radialGradient id="ia" cx="30%" cy="28%"><stop offset="0%" stop-color="#fff"/><stop offset="100%" stop-color="${mood.c1}"/></radialGradient>
-                <radialGradient id="ib" cx="35%" cy="32%"><stop offset="0%" stop-color="#fff"/><stop offset="100%" stop-color="${mood.c2}"/></radialGradient>
-                <radialGradient id="ic" cx="40%" cy="34%"><stop offset="0%" stop-color="#fff"/><stop offset="100%" stop-color="${mood.c3}"/></radialGradient>
+                <radialGradient id="${gradA}" cx="30%" cy="28%"><stop offset="0%" stop-color="#fff"/><stop offset="100%" stop-color="${mood.c1}"/></radialGradient>
+                <radialGradient id="${gradB}" cx="35%" cy="32%"><stop offset="0%" stop-color="#fff"/><stop offset="100%" stop-color="${mood.c2}"/></radialGradient>
+                <radialGradient id="${gradC}" cx="40%" cy="34%"><stop offset="0%" stop-color="#fff"/><stop offset="100%" stop-color="${mood.c3}"/></radialGradient>
             </defs>
-            <polygon class="layer1" points="${p1}" fill="url(#ia)" stroke="${mood.c3}" stroke-opacity=".42" stroke-width=".8"/>
-            <polygon class="layer2" points="${p2}" fill="url(#ib)" stroke="${mood.c3}" stroke-opacity=".56" stroke-width=".9"/>
-            <polygon class="layer3" points="${p3}" fill="url(#ic)" stroke="${mood.c3}" stroke-opacity=".76" stroke-width="1"/>
+            <polygon class="layer1" points="${p1}" fill="url(#${gradA})" stroke="${mood.c3}" stroke-opacity=".42" stroke-width=".8"/>
+            <polygon class="layer2" points="${p2}" fill="url(#${gradB})" stroke="${mood.c3}" stroke-opacity=".56" stroke-width=".9"/>
+            <polygon class="layer3" points="${p3}" fill="url(#${gradC})" stroke="${mood.c3}" stroke-opacity=".76" stroke-width="1"/>
             <circle class="core" cx="50" cy="50" r="2.8" fill="#fff"/>
         </svg>`;
     }
 
-    document.querySelectorAll('.js-mood-svg').forEach(el => {
+    document.querySelectorAll('.js-mood-svg').forEach((el, idx) => {
         const level = el.getAttribute('data-level') || '0';
         const mood = moodPalette[level] || moodPalette['0'];
-        el.innerHTML = moodSvg(mood);
+        el.innerHTML = moodSvg(mood, `idx-${idx}`);
     });
 </script>
