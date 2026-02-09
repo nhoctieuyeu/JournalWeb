@@ -34,6 +34,8 @@ namespace JournalWeb.Controllers
             if (HttpContext.Session.GetString("PinVerified") != "true")
                 return RedirectToAction("VerifyPinLogin", "Auth");
 
+            var moodColorMap = LoadMoodColorMap();
+
             var list = _context.NhatKy
                 .Include(x => x.Medias)
                 .Where(x => x.NguoiDungId == userId)
@@ -42,7 +44,20 @@ namespace JournalWeb.Controllers
                 .ThenByDescending(x => x.NhatKyId)
                 .ToList();
 
-            return View(list);
+            var cards = list.Select(x => BuildCardVm(x, moodColorMap)).ToList();
+
+            var grouped = cards
+                .GroupBy(x => new { Year = (x.NgayViet ?? DateTime.Now).Year, Month = (x.NgayViet ?? DateTime.Now).Month })
+                .OrderByDescending(g => g.Key.Year)
+                .ThenByDescending(g => g.Key.Month)
+                .Select(g => new JournalMonthGroupVm
+                {
+                    GroupTitle = BuildMonthTitle(g.Key.Month, g.Key.Year),
+                    Items = g.ToList()
+                })
+                .ToList();
+
+            return View(grouped);
         }
 
         // ===== FORM VIẾT =====
@@ -172,6 +187,142 @@ namespace JournalWeb.Controllers
 
 
             return RedirectToAction("Index");
+        }
+
+        private JournalCardVm BuildCardVm(NhatKy item, Dictionary<int, string> moodColorMap)
+        {
+            var rawNoiDung = item.NoiDung ?? string.Empty;
+            var content = rawNoiDung;
+            var moodLabel = string.Empty;
+            var moodLevel = 3;
+
+            var camXucRaw = item.GetType().GetProperty("CamXuc")?.GetValue(item)?.ToString() ?? string.Empty;
+            if (!string.IsNullOrWhiteSpace(camXucRaw))
+            {
+                var split = camXucRaw.IndexOf('|');
+                if (split > -1)
+                {
+                    if (int.TryParse(camXucRaw.Substring(0, split), out var lv)) moodLevel = lv;
+                    moodLabel = camXucRaw.Substring(split + 1);
+                }
+                else
+                {
+                    moodLabel = camXucRaw;
+                }
+            }
+
+            if (content.StartsWith("[[MOOD|", StringComparison.Ordinal))
+            {
+                var end = content.IndexOf("]]", StringComparison.Ordinal);
+                if (end > 0)
+                {
+                    var token = content.Substring(7, end - 7);
+                    var split = token.IndexOf('|');
+                    if (split > -1)
+                    {
+                        if (string.IsNullOrWhiteSpace(moodLabel))
+                        {
+                            if (int.TryParse(token.Substring(0, split), out var lv)) moodLevel = lv;
+                            moodLabel = token.Substring(split + 1);
+                        }
+                        content = content.Substring(end + 2).Trim();
+                    }
+                }
+            }
+
+            var fallbackColor = moodLevel switch
+            {
+                0 => "#B388FF",
+                1 => "#7AA2FF",
+                2 => "#79C8F2",
+                3 => "#9EC8D6",
+                4 => "#8ED66B",
+                5 => "#F6C54B",
+                _ => "#F7AD3D"
+            };
+
+            var moodColor = moodColorMap.ContainsKey(moodLevel)
+                ? moodColorMap[moodLevel]
+                : fallbackColor;
+
+            return new JournalCardVm
+            {
+                NhatKyId = item.NhatKyId,
+                TieuDe = item.TieuDe,
+                NoiDungTomTat = content,
+                MoodLabel = string.IsNullOrWhiteSpace(moodLabel) ? "Bình thường" : moodLabel,
+                MoodLevel = moodLevel,
+                MoodColor = moodColor,
+                MoodTopic = GuessMoodTopic(content),
+                NgayViet = item.NgayViet,
+                DisplayDateLine = BuildDisplayDateLine(item.NgayViet ?? item.NgayTao ?? DateTime.Now),
+                Medias = item.Medias?.OrderBy(x => x.MediaId).ToList() ?? new List<NhatKyMedia>()
+            };
+        }
+
+        private Dictionary<int, string> LoadMoodColorMap()
+        {
+            var map = new Dictionary<int, string>();
+            try
+            {
+                var conn = _context.Database.GetDbConnection();
+                if (conn.State != System.Data.ConnectionState.Open)
+                    conn.Open();
+
+                using var cmd = conn.CreateCommand();
+                cmd.CommandText = "SELECT MoodID, MoodColor FROM Table_Mood";
+                using var reader = cmd.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    if (!reader.IsDBNull(0) && !reader.IsDBNull(1))
+                    {
+                        var id = Convert.ToInt32(reader.GetValue(0));
+                        var color = Convert.ToString(reader.GetValue(1));
+                        if (!string.IsNullOrWhiteSpace(color))
+                            map[id] = color.Trim();
+                    }
+                }
+            }
+            catch
+            {
+                // Nếu môi trường chưa có Table_Mood thì fallback màu mặc định.
+            }
+
+            return map;
+        }
+
+        private string BuildMonthTitle(int month, int year)
+        {
+            var now = DateTime.Now;
+            if (year == now.Year)
+                return $"Tháng {month}";
+            return $"tháng {month} năm {year}";
+        }
+
+        private string BuildDisplayDateLine(DateTime dt)
+        {
+            var thu = dt.DayOfWeek switch
+            {
+                DayOfWeek.Monday => "Thứ Hai",
+                DayOfWeek.Tuesday => "Thứ Ba",
+                DayOfWeek.Wednesday => "Thứ Tư",
+                DayOfWeek.Thursday => "Thứ Năm",
+                DayOfWeek.Friday => "Thứ Sáu",
+                DayOfWeek.Saturday => "Thứ Bảy",
+                _ => "Chủ Nhật"
+            };
+            return $"{thu}, ngày {dt.Day} thg {dt.Month}, {dt.Year}";
+        }
+
+        private string GuessMoodTopic(string content)
+        {
+            if (string.IsNullOrWhiteSpace(content)) return "Gia đình";
+            var lower = content.ToLower();
+            if (lower.Contains("công việc") || lower.Contains("dự án")) return "Công việc";
+            if (lower.Contains("bạn") || lower.Contains("gia đình") || lower.Contains("nhà")) return "Gia đình";
+            if (lower.Contains("sức khỏe") || lower.Contains("bệnh")) return "Sức khỏe";
+            return "Các hoạt động khác";
         }
     }
 }

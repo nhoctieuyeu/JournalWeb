@@ -1,330 +1,141 @@
-﻿@model List<JournalWeb.Models.NhatKy>
+﻿@using System.Linq
+@model List<JournalWeb.Models.JournalMonthGroupVm>
 
-<style>
-    .list {
-        max-width: 640px;
-        margin: auto;
-        padding: 15px;
-    }
+@{
+    ViewData["Title"] = "Nhật ký";
+}
 
-    .card {
-        border-radius: 14px;
-        margin-bottom: 15px;
-    }
+<script src="https://cdn.tailwindcss.com"></script>
 
-    .media-grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 8px;
-        margin-top: 10px;
-    }
+<div class="min-h-screen bg-[#F2F2F7] pb-28">
+    <div class="max-w-[1200px] mx-auto px-4 md:px-6 pt-6">
+        <div class="flex items-center justify-between mb-5">
+            <button type="button" onclick="history.back()" class="w-12 h-12 rounded-full bg-white/80 border border-white shadow-sm text-2xl leading-none">←</button>
+            <div class="flex items-center gap-3 bg-white/80 border border-white rounded-full px-5 py-2 shadow-sm">
+                <button type="button" class="text-3xl leading-none">⌕</button>
+                <button type="button" class="text-3xl leading-none">⋯</button>
+            </div>
+        </div>
 
-    .media-item {
-        position: relative;
-        border-radius: 12px;
-        overflow: hidden;
-        background: #eef2f7;
-        min-height: 90px;
-    }
+        <h1 class="text-5xl font-extrabold tracking-tight mb-6">Nhật ký</h1>
 
-        .media-item.big {
-            grid-row: span 2;
-            min-height: 190px;
-        }
-
-        .media-item img, .media-item video {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: block;
-        }
-
-    .media-tag {
-        position: absolute;
-        right: 8px;
-        bottom: 8px;
-        font-size: 11px;
-        color: #fff;
-        background: rgba(0, 0, 0, .55);
-        padding: 2px 7px;
-        border-radius: 16px;
-    }
-
-    .emotion-card {
-        position: relative;
-    }
-
-    .emotion-art {
-        width: 100%;
-        height: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .emotion-svg-wrap {
-        width: 120px;
-        height: 120px;
-        filter: drop-shadow(0 10px 16px rgba(0,0,0,.12));
-    }
-
-    .emotion-name {
-        position: absolute;
-        left: 8px;
-        right: 8px;
-        bottom: 8px;
-        text-align: center;
-        font-weight: 700;
-        font-size: 12px;
-        color: #2a2d47;
-        background: rgba(255,255,255,.72);
-        padding: 2px 8px;
-        border-radius: 10px;
-    }
-
-    .emotion-svg-wrap .layer1 {
-        animation: cardRippleA 4s ease-in-out infinite;
-        transform-origin: 50% 50%;
-    }
-
-    .emotion-svg-wrap .layer2 {
-        animation: cardRippleB 3.2s ease-in-out infinite;
-        transform-origin: 50% 50%;
-    }
-
-    .emotion-svg-wrap .layer3 {
-        animation: cardRippleC 2.8s ease-in-out infinite;
-        transform-origin: 50% 50%;
-    }
-
-    .emotion-svg-wrap .core {
-        animation: cardCoreGlow 2.2s ease-in-out infinite;
-        transform-origin: 50% 50%;
-    }
-
-    @@keyframes cardRippleA {
-        0%, 100% {
-            transform: scale(1) rotate(0deg);
-        }
-
-        50% {
-            transform: scale(1.03) rotate(-2deg);
-        }
-    }
-
-    @@keyframes cardRippleB {
-        0%, 100% {
-            transform: scale(1) rotate(0deg);
-        }
-
-        50% {
-            transform: scale(1.05) rotate(2deg);
-        }
-    }
-
-    @@keyframes cardRippleC {
-        0%, 100% {
-            transform: scale(1) rotate(0deg);
-        }
-
-        50% {
-            transform: scale(1.07) rotate(-3deg);
-        }
-    }
-
-    @@keyframes cardCoreGlow {
-        0%, 100% {
-            opacity: .82;
-        }
-
-        50% {
-            opacity: 1;
-        }
-    }
-
-    .fab {
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        width: 56px;
-        height: 56px;
-        border-radius: 50%;
-        font-size: 28px;
-    }
-</style>
-
-<div class="list">
-    @foreach (var item in Model)
-    {
-        var noiDungHienThi = item.NoiDung ?? "";
-        var moodLabel = "";
-        var moodLevelRaw = "";
-        var moodBg = "";
-
-        var camXucRaw = item.GetType().GetProperty("CamXuc")?.GetValue(item)?.ToString() ?? "";
-        if (!string.IsNullOrWhiteSpace(camXucRaw))
+        @if (Model == null || !Model.Any())
         {
-            var splitCamXuc = camXucRaw.IndexOf('|');
-            if (splitCamXuc > -1)
-            {
-                moodLevelRaw = camXucRaw.Substring(0, splitCamXuc);
-                moodLabel = camXucRaw.Substring(splitCamXuc + 1);
-            }
-            else
-            {
-                moodLevelRaw = "3";
-                moodLabel = camXucRaw;
-            }
+            <div class="rounded-3xl bg-white p-8 text-center text-gray-500 shadow-sm">Chưa có nhật ký nào.</div>
         }
-
-        if (noiDungHienThi.StartsWith("[[MOOD|"))
+        else
         {
-            var end = noiDungHienThi.IndexOf("]]", StringComparison.Ordinal);
-            if (end > 0)
+            @foreach (var group in Model)
             {
-                var token = noiDungHienThi.Substring(7, end - 7);
-                var splitIndex = token.IndexOf('|');
-                if (splitIndex > -1)
-                {
-                    if (string.IsNullOrWhiteSpace(moodLabel))
+                <h2 class="text-4xl font-bold mb-4 mt-8 first:mt-0">@group.GroupTitle</h2>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+                    @foreach (var card in group.Items)
                     {
-                        moodLevelRaw = token.Substring(0, splitIndex);
-                        moodLabel = token.Substring(splitIndex + 1);
-                    }
+                        var medias = card.Medias ?? new List<JournalWeb.Models.NhatKyMedia>();
+                        var shown = medias.Take(4).ToList();
+                        var extraCount = Math.Max(0, medias.Count - 4);
+                        var bg = string.IsNullOrWhiteSpace(card.MoodColor) ? "#F7C66B" : card.MoodColor;
 
-                    noiDungHienThi = noiDungHienThi.Substring(end + 2).Trim();
-                }
-            }
-        }
+                        <article class="rounded-[24px] bg-white shadow-sm overflow-hidden relative">
+                            <div class="p-3 border border-gray-100 rounded-t-[24px]">
+                                <div class="grid grid-cols-2 gap-2 h-[210px]">
+                                    <div class="rounded-[18px] p-3 flex flex-col justify-between text-center"
+                                         style="background: linear-gradient(180deg, #F8EAD9 0%, @bg 100%);">
+                                        <div class="text-[20px] font-semibold text-gray-700 leading-tight">@card.MoodLabel</div>
 
-        if (!string.IsNullOrWhiteSpace(moodLabel))
-        {
-            switch (moodLevelRaw)
-            {
-                case "0": moodBg = "radial-gradient(circle at 50% 25%, #d9d2ef, #bcb0e3)"; break;
-                case "1": moodBg = "radial-gradient(circle at 50% 25%, #d7e2fb, #beccef)"; break;
-                case "2": moodBg = "radial-gradient(circle at 50% 25%, #dff0f8, #cbdeee)"; break;
-                case "3": moodBg = "radial-gradient(circle at 50% 25%, #e0eef2, #c9dde2)"; break;
-                case "4": moodBg = "radial-gradient(circle at 50% 25%, #e4f5d8, #cce6ba)"; break;
-                case "5": moodBg = "radial-gradient(circle at 50% 25%, #f9efc8, #eedca5)"; break;
-                default: moodBg = "radial-gradient(circle at 50% 25%, #f8e4ba, #f0cf96)"; break;
-            }
-        }
+                                        <div class="flex items-center justify-center">
+                                            <div class="w-24 h-24 rounded-full bg-white/35 backdrop-blur-[2px] flex items-center justify-center text-5xl">✿</div>
+                                        </div>
 
-        <div class="card p-3 shadow-sm">
-            <small class="text-muted">@(item.NgayViet?.ToString("dd/MM/yyyy") ?? "")</small>
+                                        <div class="text-[16px] text-gray-600 leading-tight">@card.MoodTopic</div>
+                                    </div>
 
-            @if (!string.IsNullOrWhiteSpace(item.TieuDe))
-            {
-                <h6 class="mt-1">@item.TieuDe</h6>
-            }
+                                    <div class="grid gap-2 @(shown.Count <= 1 ? "grid-cols-1" : shown.Count == 2 ? "grid-cols-1 grid-rows-2" : "grid-cols-2 grid-rows-2")">
+                                        @if (!shown.Any())
+                                        {
+                                            <div class="rounded-2xl bg-gray-100 flex items-center justify-center text-gray-400 text-sm">Không có media</div>
+                                        }
+                                        else
+                                        {
+                                            for (var i = 0; i < shown.Count; i++)
+                                            {
+                                                var media = shown[i];
+                                                var isVideo = media.LoaiMedia == "video";
+                                                var isLastOverlay = extraCount > 0 && i == shown.Count - 1;
 
-            <p class="mb-1">@noiDungHienThi</p>
+                                                <div class="relative rounded-2xl overflow-hidden bg-gray-100 @(shown.Count == 1 ? "h-full" : "")">
+                                                    @if (isVideo)
+                                                    {
+                                                        <video src="@media.DuongDanFile" class="w-full h-full object-cover" muted playsinline></video>
+                                                        <div class="absolute right-2 bottom-2 text-white text-xs font-semibold bg-black/35 rounded-lg px-2 py-1">▶ 0:21</div>
+                                                    }
+                                                    else
+                                                    {
+                                                        <img src="@media.DuongDanFile" alt="media" class="w-full h-full object-cover" />
+                                                    }
 
-            @{
-                var medias = item.Medias?.ToList() ?? new List<JournalWeb.Models.NhatKyMedia>();
-            }
-
-            @if (!string.IsNullOrWhiteSpace(moodLabel) || medias.Any())
-            {
-                <div class="media-grid">
-                    @if (!string.IsNullOrWhiteSpace(moodLabel))
-                    {
-                        <div class="media-item big emotion-card" style="background:@moodBg">
-                            <div class="emotion-art">
-                                <div class="emotion-svg-wrap js-mood-svg" data-level="@moodLevelRaw"></div>
+                                                    @if (isLastOverlay)
+                                                    {
+                                                        <div class="absolute inset-0 bg-black/35 flex items-center justify-center">
+                                                            <div class="text-white text-2xl font-bold">+@extraCount</div>
+                                                        </div>
+                                                    }
+                                                </div>
+                                            }
+                                        }
+                                    </div>
+                                </div>
                             </div>
-                            <div class="emotion-name">@moodLabel</div>
-                        </div>
-                    }
 
-                    @for (int i = 0; i < medias.Count; i++)
-                    {
-                        var media = medias[i];
-                        var bigClass = string.IsNullOrWhiteSpace(moodLabel) && i == 0 ? "big" : "";
+                            <div class="px-6 pt-5 pb-4">
+                                <h3 class="text-4xl font-bold leading-tight mb-2">@(!string.IsNullOrWhiteSpace(card.TieuDe) ? card.TieuDe : "Không tiêu đề")</h3>
+                                <p class="text-3xl text-gray-800 leading-snug line-clamp-2">@card.NoiDungTomTat</p>
+                            </div>
 
-                        <div class="media-item @bigClass">
-                            @if (media.LoaiMedia == "video")
-                            {
-                                <video src="@media.DuongDanFile" controls playsinline></video>
-                                <span class="media-tag">Video</span>
-                            }
-                            else
-                            {
-                                <img src="@media.DuongDanFile" alt="media" />
-                                <span class="media-tag">Ảnh</span>
-                            }
-                        </div>
+                            <div class="px-6 py-3 border-t border-gray-200 flex items-center justify-between">
+                                <div class="text-2xl text-gray-500">@card.DisplayDateLine</div>
+
+                                <div class="relative">
+                                    <button type="button"
+                                            class="text-3xl text-gray-500 w-10 h-10"
+                                            onclick="toggleMenu(@card.NhatKyId)">
+                                        ⋯
+                                    </button>
+
+                                    <div id="menu-@card.NhatKyId" class="hidden absolute right-0 bottom-11 w-72 rounded-3xl bg-white shadow-xl border border-gray-100 p-3 z-40">
+                                        <a href="#" class="block px-4 py-3 rounded-xl hover:bg-gray-50 text-xl">✎ Sửa</a>
+                                        <a href="#" class="block px-4 py-3 rounded-xl hover:bg-gray-50 text-xl">🔖 Đánh dấu 1 bài viết</a>
+                                        <a href="#" class="block px-4 py-3 rounded-xl hover:bg-gray-50 text-xl">☐ Chọn nhật ký</a>
+                                        <a href="#" class="block px-4 py-3 rounded-xl hover:bg-gray-50 text-xl">🖨 In 1 bài viết</a>
+                                        <hr class="my-2" />
+                                        <a href="#" class="block px-4 py-3 rounded-xl hover:bg-red-50 text-xl text-red-500">🗑 Xóa 1 bài viết</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </article>
                     }
                 </div>
             }
-        </div>
-    }
+        }
+    </div>
+
+    <a href="@Url.Action("Create")"
+       class="fixed right-7 bottom-7 w-16 h-16 rounded-full bg-indigo-600 hover:bg-indigo-700 text-white text-5xl leading-[64px] text-center shadow-xl">+</a>
 </div>
 
-<a href="@Url.Action("Create")" class="btn btn-primary fab">+</a>
-
 <script>
-    const moodPalette = {
-        "0": { c1: "#f4ebff", c2: "#c39aff", c3: "#7c4bc4", petals: 14, sharp: 2.6, amp: .26 },
-        "1": { c1: "#eef4ff", c2: "#9fb8ff", c3: "#5278e5", petals: 11, sharp: 2.1, amp: .22 },
-        "2": { c1: "#ecf8ff", c2: "#92cdf5", c3: "#4a9fdb", petals: 8, sharp: 1.45, amp: .16 },
-        "3": { c1: "#f6fdff", c2: "#a8dcee", c3: "#77b8cf", rings: true },
-        "4": { c1: "#f2ffe7", c2: "#a5e86f", c3: "#6bc436", petals: 5, sharp: 1.05, amp: .11 },
-        "5": { c1: "#fff8df", c2: "#ffde58", c3: "#f0b21f", petals: 7, sharp: 1.28, amp: .17 },
-        "6": { c1: "#fff7e3", c2: "#ffc75f", c3: "#f09d17", petals: 9, sharp: 0.9, amp: .22 }
-    };
-
-    function flowerPoints(radius, petals, amp, sharp, phase = 0, count = 220) {
-        let pts = [];
-        for (let i = 0; i < count; i++) {
-            const t = (Math.PI * 2 * i) / count;
-            const wave = Math.sin(petals * t + phase);
-            const softened = Math.sign(wave) * Math.pow(Math.abs(wave), sharp);
-            const r = radius * (1 + amp * softened);
-            const x = 50 + r * Math.cos(t);
-            const y = 50 + r * Math.sin(t);
-            pts.push(`${x.toFixed(2)},${y.toFixed(2)}`);
-        }
-        return pts.join(' ');
+    function toggleMenu(id) {
+        document.querySelectorAll('[id^="menu-"]').forEach(el => {
+            if (el.id !== `menu-${id}`) el.classList.add('hidden');
+        });
+        const menu = document.getElementById(`menu-${id}`);
+        if (menu) menu.classList.toggle('hidden');
     }
 
-    function moodSvg(mood, idPrefix) {
-        const grad1 = `${idPrefix}-g1`;
-        const gradA = `${idPrefix}-ga`;
-        const gradB = `${idPrefix}-gb`;
-        const gradC = `${idPrefix}-gc`;
-
-        if (mood.rings) {
-            return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                <circle class="layer1" cx="50" cy="50" r="42" fill="none" stroke="${mood.c1}" stroke-width="1.2"/>
-                <circle class="layer2" cx="50" cy="50" r="31" fill="none" stroke="${mood.c2}" stroke-width="1.6"/>
-                <circle class="layer3" cx="50" cy="50" r="20" fill="url(#${grad1})" stroke="${mood.c3}" stroke-width="1.2"/>
-                <circle class="core" cx="50" cy="50" r="4.5" fill="#fff"/>
-                <defs><radialGradient id="${grad1}" cx="35%" cy="30%"><stop offset="0%" stop-color="#fff"/><stop offset="100%" stop-color="${mood.c2}"/></radialGradient></defs>
-            </svg>`;
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('[onclick^="toggleMenu"]') && !e.target.closest('[id^="menu-"]')) {
+            document.querySelectorAll('[id^="menu-"]').forEach(el => el.classList.add('hidden'));
         }
-
-        const p1 = flowerPoints(38, mood.petals || 8, mood.amp || .18, mood.sharp || 1.4, 0);
-        const p2 = flowerPoints(29, Math.max(4, (mood.petals || 8) - 1), Math.max(.05, (mood.amp || .18) - .04), Math.max(.8, (mood.sharp || 1.4) - .15), .3);
-        const p3 = flowerPoints(20, Math.max(4, (mood.petals || 8) - 2), Math.max(.04, (mood.amp || .18) - .08), Math.max(.7, (mood.sharp || 1.4) - .22), -.3);
-
-        return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-                <radialGradient id="${gradA}" cx="30%" cy="28%"><stop offset="0%" stop-color="#fff"/><stop offset="100%" stop-color="${mood.c1}"/></radialGradient>
-                <radialGradient id="${gradB}" cx="35%" cy="32%"><stop offset="0%" stop-color="#fff"/><stop offset="100%" stop-color="${mood.c2}"/></radialGradient>
-                <radialGradient id="${gradC}" cx="40%" cy="34%"><stop offset="0%" stop-color="#fff"/><stop offset="100%" stop-color="${mood.c3}"/></radialGradient>
-            </defs>
-            <polygon class="layer1" points="${p1}" fill="url(#${gradA})" stroke="${mood.c3}" stroke-opacity=".42" stroke-width=".8"/>
-            <polygon class="layer2" points="${p2}" fill="url(#${gradB})" stroke="${mood.c3}" stroke-opacity=".56" stroke-width=".9"/>
-            <polygon class="layer3" points="${p3}" fill="url(#${gradC})" stroke="${mood.c3}" stroke-opacity=".76" stroke-width="1"/>
-            <circle class="core" cx="50" cy="50" r="2.8" fill="#fff"/>
-        </svg>`;
-    }
-
-    document.querySelectorAll('.js-mood-svg').forEach((el, idx) => {
-        const level = el.getAttribute('data-level') || '0';
-        const mood = moodPalette[level] || moodPalette['0'];
-        el.innerHTML = moodSvg(mood, `idx-${idx}`);
     });
 </script>
