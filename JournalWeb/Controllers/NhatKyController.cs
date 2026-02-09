@@ -85,7 +85,7 @@ namespace JournalWeb.Controllers
 
             if (string.IsNullOrWhiteSpace(noiDung))
             {
-                ViewBag.Loi = "Nội dung không được để trống";
+                ViewBag.Loi = "Ni dung không được để trống";
                 return View();
             }
 
@@ -255,9 +255,37 @@ namespace JournalWeb.Controllers
                 MoodColor = moodColor,
                 MoodTopic = GuessMoodTopic(content),
                 NgayViet = item.NgayViet,
-                DisplayDateLine = BuildDisplayDateLine(item.NgayViet ?? item.NgayTao ?? DateTime.Now),
+                DisplayDateLine = BuildDisplayDateLine(ResolveDisplayDate(item)),
                 Medias = item.Medias?.OrderBy(x => x.MediaId).ToList() ?? new List<NhatKyMedia>()
             };
+        }
+
+
+        private DateTime ResolveDisplayDate(NhatKy item)
+        {
+            var t = item.GetType();
+
+            var ngayVietObj = t.GetProperty("NgayViet")?.GetValue(item);
+            if (TryGetDateTime(ngayVietObj, out var ngayViet))
+                return ngayViet;
+
+            var ngayTaoObj = t.GetProperty("NgayTao")?.GetValue(item);
+            if (TryGetDateTime(ngayTaoObj, out var ngayTao))
+                return ngayTao;
+
+            return DateTime.Now;
+        }
+
+        private bool TryGetDateTime(object value, out DateTime dt)
+        {
+            if (value is DateTime direct)
+            {
+                dt = direct;
+                return true;
+            }
+
+            dt = default;
+            return false;
         }
 
         private Dictionary<int, string> LoadMoodColorMap()
