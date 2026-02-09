@@ -119,11 +119,14 @@ namespace JournalWeb.Controllers
                 TieuDe = tieuDe,
                 NoiDung = finalNoiDung,
                 NgayViet = ngayViet,
-                CamXuc = camXuc,
-                IsRiengTu = false,
-                NgayTao = DateTime.Now,
-                NgayCapNhat = DateTime.Now
+                NgayTao = DateTime.Now
             };
+
+            // Tương thích ngược: nếu model NhatKy có các trường mood mới thì gán, không có thì bỏ qua.
+            var nhatKyType = typeof(NhatKy);
+            nhatKyType.GetProperty("CamXuc")?.SetValue(nk, camXuc);
+            nhatKyType.GetProperty("IsRiengTu")?.SetValue(nk, false);
+            nhatKyType.GetProperty("NgayCapNhat")?.SetValue(nk, DateTime.Now);
 
             _context.NhatKy.Add(nk);
             _context.SaveChanges();

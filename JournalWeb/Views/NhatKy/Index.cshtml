@@ -161,7 +161,7 @@
         var moodLevelRaw = "";
         var moodBg = "";
 
-        var camXucRaw = item.CamXuc ?? "";
+        var camXucRaw = item.GetType().GetProperty("CamXuc")?.GetValue(item)?.ToString() ?? "";
         if (!string.IsNullOrWhiteSpace(camXucRaw))
         {
             var splitCamXuc = camXucRaw.IndexOf('|');
