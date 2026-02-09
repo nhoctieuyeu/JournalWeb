@@ -177,7 +177,7 @@
             }
         }
 
-        if (string.IsNullOrWhiteSpace(moodLabel) && noiDungHienThi.StartsWith("[[MOOD|"))
+        if (noiDungHienThi.StartsWith("[[MOOD|"))
         {
             var end = noiDungHienThi.IndexOf("]]", StringComparison.Ordinal);
             if (end > 0)
@@ -186,8 +186,12 @@
                 var splitIndex = token.IndexOf('|');
                 if (splitIndex > -1)
                 {
-                    moodLevelRaw = token.Substring(0, splitIndex);
-                    moodLabel = token.Substring(splitIndex + 1);
+                    if (string.IsNullOrWhiteSpace(moodLabel))
+                    {
+                        moodLevelRaw = token.Substring(0, splitIndex);
+                        moodLabel = token.Substring(splitIndex + 1);
+                    }
+
                     noiDungHienThi = noiDungHienThi.Substring(end + 2).Trim();
                 }
             }

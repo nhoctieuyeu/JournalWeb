@@ -38,6 +38,8 @@ namespace JournalWeb.Controllers
                 .Include(x => x.Medias)
                 .Where(x => x.NguoiDungId == userId)
                 .OrderByDescending(x => x.NgayViet)
+                .ThenByDescending(x => x.NgayTao)
+                .ThenByDescending(x => x.NhatKyId)
                 .ToList();
 
             return View(list);
@@ -112,6 +114,22 @@ namespace JournalWeb.Controllers
                 camXuc = $"{moodLevel.Value}|{safeMoodLabel}";
             else if (!string.IsNullOrWhiteSpace(safeMoodLabel))
                 camXuc = safeMoodLabel;
+
+            // Luôn lưu token mood vào NoiDung để tương thích tuyệt đối (kể cả khi DB/model chưa có cột CamXuc)
+            if (!string.IsNullOrWhiteSpace(camXuc))
+            {
+                var splitIndex = camXuc.IndexOf('|');
+                if (splitIndex > -1)
+                {
+                    var lv = camXuc.Substring(0, splitIndex);
+                    var label = camXuc.Substring(splitIndex + 1);
+                    finalNoiDung = $"[[MOOD|{lv}|{label}]]\n{finalNoiDung}";
+                }
+                else
+                {
+                    finalNoiDung = $"[[MOOD|3|{camXuc}]]\n{finalNoiDung}";
+                }
+            }
 
             var nk = new NhatKy
             {
