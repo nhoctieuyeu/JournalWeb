@@ -2,6 +2,7 @@
 using JournalWeb.Data;
 using JournalWeb.Helpers;
 using Microsoft.AspNetCore.Http;
+using System.Linq;
 
 namespace JournalWeb.Controllers
 {
@@ -23,13 +24,12 @@ namespace JournalWeb.Controllers
         [HttpPost]
         public IActionResult Set(string pin)
         {
-            if (string.IsNullOrEmpty(pin) || pin.Length < 4 || pin.Length > 6)
+            if (string.IsNullOrEmpty(pin) || pin.Length < 4 || pin.Length > 6 || !pin.All(char.IsDigit))
             {
                 ViewBag.Error = "PIN phải từ 4–6 số";
                 return View();
             }
 
-            // ✅ LẤY SESSION ĐÚNG + AN TOÀN
             var userId = HttpContext.Session.GetInt32("NguoiDungId");
             if (userId == null)
                 return RedirectToAction("Login", "Auth");
@@ -61,7 +61,7 @@ namespace JournalWeb.Controllers
             if (user == null)
                 return RedirectToAction("Login", "Auth");
 
-            if (user.PinHash == SecurityHelper.HashPin(pin))
+            if (SecurityHelper.VerifyPin(pin, user.PinHash))
             {
                 HttpContext.Session.SetString("PinVerified", "true");
                 return RedirectToAction("Index", "NhatKy");

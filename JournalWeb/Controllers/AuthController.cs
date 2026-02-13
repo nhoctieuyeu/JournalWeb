@@ -51,7 +51,6 @@ namespace JournalWeb.Controllers
                 return View();
             }
 
-            // PIN: đúng 4 số
             if (string.IsNullOrEmpty(pin) || pin.Length != 4 || !pin.All(char.IsDigit))
             {
                 ViewBag.Loi = "Mã PIN phải gồm đúng 4 chữ số";
@@ -72,12 +71,14 @@ namespace JournalWeb.Controllers
 
             var user = new NguoiDung
             {
+                TaiKhoan = email,
                 Email = email,
                 HoTen = hoTen,
                 MatKhauHash = SecurityHelper.HashPassword(matKhau),
-                PinHash = SecurityHelper.HashPin(pin),
+                PinHash = SecurityHelper.HashPin(pin),  // lưu vào DB
                 IsActive = true,
-                NgayTao = DateTime.Now
+                NgayTao = DateTime.Now,
+                QuyenId = 2  // mặc định User
             };
 
             _context.NguoiDung.Add(user);
@@ -122,7 +123,6 @@ namespace JournalWeb.Controllers
             HttpContext.Session.SetString("HoTen", user.HoTen ?? "");
             HttpContext.Session.SetString("PinVerified", "false");
 
-
             return RedirectToAction("VerifyPinLogin");
         }
 
@@ -131,7 +131,6 @@ namespace JournalWeb.Controllers
         {
             if (!HttpContext.Session.GetInt32("NguoiDungId").HasValue)
                 return RedirectToAction("Login");
-
             return View();
         }
 
@@ -143,6 +142,8 @@ namespace JournalWeb.Controllers
                 return RedirectToAction("Login");
 
             var user = _context.NguoiDung.Find(userId.Value);
+            if (user == null)
+                return RedirectToAction("Login");
 
             if (!SecurityHelper.VerifyPin(pin, user.PinHash))
             {
@@ -153,7 +154,6 @@ namespace JournalWeb.Controllers
             HttpContext.Session.SetString("PinVerified", "true");
             return RedirectToAction("Index", "NhatKy");
         }
-
 
         // ================= FORGOT PASSWORD =================
         public IActionResult ForgotPassword()
@@ -173,7 +173,6 @@ namespace JournalWeb.Controllers
 
             HttpContext.Session.Clear();
             HttpContext.Session.SetInt32("ResetUserId", user.NguoiDungId);
-
             return RedirectToAction("VerifyPinReset");
         }
 
@@ -182,7 +181,6 @@ namespace JournalWeb.Controllers
         {
             if (!HttpContext.Session.GetInt32("ResetUserId").HasValue)
                 return RedirectToAction("ForgotPassword");
-
             return View();
         }
 
@@ -194,6 +192,8 @@ namespace JournalWeb.Controllers
                 return RedirectToAction("ForgotPassword");
 
             var user = _context.NguoiDung.Find(userId.Value);
+            if (user == null)
+                return RedirectToAction("ForgotPassword");
 
             if (!SecurityHelper.VerifyPin(pin, user.PinHash))
             {
@@ -210,7 +210,6 @@ namespace JournalWeb.Controllers
         {
             if (HttpContext.Session.GetString("PinVerifiedReset") != "true")
                 return RedirectToAction("ForgotPassword");
-
             return View();
         }
 
@@ -225,6 +224,7 @@ namespace JournalWeb.Controllers
 
             var userId = HttpContext.Session.GetInt32("ResetUserId");
             var user = _context.NguoiDung.Find(userId.Value);
+            if (user == null) return RedirectToAction("Login");
 
             user.MatKhauHash = SecurityHelper.HashPassword(password);
             _context.SaveChanges();

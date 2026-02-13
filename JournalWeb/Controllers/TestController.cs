@@ -16,6 +16,13 @@ namespace JournalWeb.Controllers
             _context = context;
         }
 
+        public IActionResult TestHash()
+        {
+            var mk = "manman@2025";
+            var hash = JournalWeb.Helpers.SecurityHelper.HashPassword(mk);
+            return Content($"Hash của '{mk}' là: {hash}");
+        }
+
         public IActionResult Index()
         {
             int dem = _context.NguoiDung.Count();

@@ -1,9 +1,11 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace JournalWeb.Models
 {
     public class NhatKyMedia
     {
+        [Key]
         public int MediaId { get; set; }
         public int NhatKyId { get; set; }
 

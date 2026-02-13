@@ -35,23 +35,52 @@
                         var medias = card.Medias ?? new List<JournalWeb.Models.NhatKyMedia>();
                         var shown = medias.Take(4).ToList();
                         var extraCount = Math.Max(0, medias.Count - 4);
-                        var bg = string.IsNullOrWhiteSpace(card.MoodColor) ? "#F7C66B" : card.MoodColor;
-                        var moodStyle = bg.Contains("gradient", StringComparison.OrdinalIgnoreCase) ? bg : $"linear-gradient(180deg, #F8EAD9 0%, {bg} 100%)";
+                        var moodStyle = string.IsNullOrWhiteSpace(card.MoodColor) ? "linear-gradient(180deg, #F8EAD9 0%, #F7C66B 100%)" : card.MoodColor;
 
                         <article class="rounded-[24px] bg-white shadow-sm overflow-hidden relative">
                             <div class="p-3 border border-gray-100 rounded-t-[24px]">
                                 <div class="grid grid-cols-2 gap-2 h-[210px]">
+                                    <!-- Cột mood -->
                                     <div class="rounded-[18px] p-3 flex flex-col justify-between text-center"
                                          style="background: @moodStyle;">
                                         <div class="text-[20px] font-semibold text-gray-700 leading-tight">@card.MoodLabel</div>
+
+                                        <!-- Hiển thị các chip cảm xúc chi tiết -->
+                                        @if (card.MoodChiTiets != null && card.MoodChiTiets.Any())
+                                        {
+                                            <div class="flex flex-wrap justify-center gap-1 mt-1">
+                                                @foreach (var ct in card.MoodChiTiets.Take(3))
+                                                {
+                                                    <span class="text-xs bg-white/50 px-2 py-1 rounded-full">@ct</span>
+                                                }
+                                                @if (card.MoodChiTiets.Count > 3)
+                                                {
+                                                    <span class="text-xs bg-white/50 px-2 py-1 rounded-full">+@(card.MoodChiTiets.Count - 3)</span>
+                                                }
+                                            </div>
+                                        }
 
                                         <div class="flex items-center justify-center">
                                             <div class="w-24 h-24 rounded-full bg-white/35 backdrop-blur-[2px] flex items-center justify-center text-5xl">✿</div>
                                         </div>
 
-                                        <div class="text-[16px] text-gray-600 leading-tight">@card.MoodTopic</div>
+                                        <!-- Hiển thị danh mục tác động -->
+                                        @if (card.DanhMucs != null && card.DanhMucs.Any())
+                                        {
+                                            <div class="flex flex-wrap justify-center gap-1 mt-1">
+                                                @foreach (var dm in card.DanhMucs.Take(2))
+                                                {
+                                                    <span class="text-xs bg-gray-200/70 px-2 py-1 rounded-full">@dm</span>
+                                                }
+                                                @if (card.DanhMucs.Count > 2)
+                                                {
+                                                    <span class="text-xs bg-gray-200/70 px-2 py-1 rounded-full">+@(card.DanhMucs.Count - 2)</span>
+                                                }
+                                            </div>
+                                        }
                                     </div>
 
+                                    <!-- Cột media -->
                                     <div class="grid gap-2 @(shown.Count <= 1 ? "grid-cols-1" : shown.Count == 2 ? "grid-cols-1 grid-rows-2" : "grid-cols-2 grid-rows-2")">
                                         @if (!shown.Any())
                                         {
