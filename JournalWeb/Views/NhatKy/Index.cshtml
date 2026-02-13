@@ -37,6 +37,8 @@
                         var extraCount = Math.Max(0, medias.Count - 4);
                         var bg = string.IsNullOrWhiteSpace(card.MoodColor) ? "#F7C66B" : card.MoodColor;
                         var moodStyle = bg.Contains("gradient", StringComparison.OrdinalIgnoreCase) ? bg : $"linear-gradient(180deg, #F8EAD9 0%, {bg} 100%)";
+                        var moodTopic = card.GetType().GetProperty("MoodTopic")?.GetValue(card)?.ToString();
+                        if (string.IsNullOrWhiteSpace(moodTopic)) moodTopic = "Các hoạt động khác";
 
                         <article class="rounded-[24px] bg-white shadow-sm overflow-hidden relative">
                             <div class="p-3 border border-gray-100 rounded-t-[24px]">
@@ -49,7 +51,7 @@
                                             <div class="w-24 h-24 rounded-full bg-white/35 backdrop-blur-[2px] flex items-center justify-center text-5xl">✿</div>
                                         </div>
 
-                                        <div class="text-[16px] text-gray-600 leading-tight">@card.MoodTopic</div>
+                                        <div class="text-[16px] text-gray-600 leading-tight">@moodTopic</div>
                                     </div>
 
                                     <div class="grid gap-2 @(shown.Count <= 1 ? "grid-cols-1" : shown.Count == 2 ? "grid-cols-1 grid-rows-2" : "grid-cols-2 grid-rows-2")">
