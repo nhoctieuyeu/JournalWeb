@@ -36,12 +36,13 @@
                         var shown = medias.Take(4).ToList();
                         var extraCount = Math.Max(0, medias.Count - 4);
                         var bg = string.IsNullOrWhiteSpace(card.MoodColor) ? "#F7C66B" : card.MoodColor;
+                        var moodStyle = bg.Contains("gradient", StringComparison.OrdinalIgnoreCase) ? bg : $"linear-gradient(180deg, #F8EAD9 0%, {bg} 100%)";
 
                         <article class="rounded-[24px] bg-white shadow-sm overflow-hidden relative">
                             <div class="p-3 border border-gray-100 rounded-t-[24px]">
                                 <div class="grid grid-cols-2 gap-2 h-[210px]">
                                     <div class="rounded-[18px] p-3 flex flex-col justify-between text-center"
-                                         style="background: linear-gradient(180deg, #F8EAD9 0%, @bg 100%);">
+                                         style="background: @moodStyle;">
                                         <div class="text-[20px] font-semibold text-gray-700 leading-tight">@card.MoodLabel</div>
 
                                         <div class="flex items-center justify-center">
@@ -68,7 +69,7 @@
                                                     @if (isVideo)
                                                     {
                                                         <video src="@media.DuongDanFile" class="w-full h-full object-cover" muted playsinline></video>
-                                                        <div class="absolute right-2 bottom-2 text-white text-xs font-semibold bg-black/35 rounded-lg px-2 py-1">▶ 0:21</div>
+                                                        <div class="absolute right-2 bottom-2 text-white text-xs font-semibold bg-black/35 rounded-lg px-2 py-1">▶ @(string.IsNullOrWhiteSpace(media.ThoiLuong) ? "0:00" : media.ThoiLuong)</div>
                                                     }
                                                     else
                                                     {
