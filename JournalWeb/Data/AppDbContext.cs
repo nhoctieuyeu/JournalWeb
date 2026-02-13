@@ -90,11 +90,10 @@ namespace JournalWeb.Data
                 .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<NhatKy_DanhMuc>()
-                .HasOne(x => x.DanhMucTacDong)
+                 .HasOne<DanhMucTacDong>()
                 .WithMany(x => x.NhatKy_DanhMucs)
                 .HasForeignKey(x => x.DanhMucId)
                 .OnDelete(DeleteBehavior.NoAction);
         }
     }
 }
-    

@@ -42,7 +42,7 @@ namespace JournalWeb.Controllers
             var cards = list.Select(x => BuildCardVm(x, moodColorMap)).ToList();
 
             var grouped = cards
-                .GroupBy(x => new { Year = (x.NgayViet ?? DateTime.Now).Year, Month = (x.NgayViet ?? DateTime.Now).Month })
+                .GroupBy(x => new { Year = x.NgayViet.Year, Month = x.NgayViet.Month })
                 .OrderByDescending(g => g.Key.Year)
                 .ThenByDescending(g => g.Key.Month)
                 .Select(g => new JournalMonthGroupVm
@@ -189,7 +189,7 @@ namespace JournalWeb.Controllers
                 moodLabel = item.MucDoCamXuc?.TenMucDo;
             }
 
-            return new JournalCardVm
+            var card = new JournalCardVm
             {
                 NhatKyId = item.NhatKyId,
                 TieuDe = item.TieuDe,
@@ -197,11 +197,18 @@ namespace JournalWeb.Controllers
                 MoodLabel = string.IsNullOrWhiteSpace(moodLabel) ? ("Mức " + moodLevel) : moodLabel,
                 MoodLevel = moodLevel,
                 MoodColor = moodColor,
-                MoodTopic = GuessMoodTopic(content),
                 NgayViet = item.NgayViet,
                 DisplayDateLine = BuildDisplayDateLine(item.NgayViet),
                 Medias = item.Medias?.OrderBy(x => x.MediaId).ToList() ?? new List<NhatKyMedia>()
             };
+
+            var moodTopicProp = card.GetType().GetProperty("MoodTopic");
+            if (moodTopicProp != null && moodTopicProp.CanWrite)
+            {
+                moodTopicProp.SetValue(card, GuessMoodTopic(content));
+            }
+
+            return card;
         }
 
         private Dictionary<int, string> LoadMoodColorMap()
