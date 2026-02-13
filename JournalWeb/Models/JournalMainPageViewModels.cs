@@ -17,8 +17,8 @@ namespace JournalWeb.Models
         public string MoodLabel { get; set; }
         public int MoodLevel { get; set; }
         public string MoodColor { get; set; }
-        public List<string> MoodChiTiets { get; set; } = new List<string>();   // danh sách chip
-        public List<string> DanhMucs { get; set; } = new List<string>();       // danh sách danh mục
+        public List<string> MoodChiTiets { get; set; } = new List<string>();   // 👈 THÊM
+        public List<string> DanhMucs { get; set; } = new List<string>();       // 👈 THÊM
         public DateTime NgayViet { get; set; }
         public string DisplayDateLine { get; set; }
         public List<NhatKyMedia> Medias { get; set; } = new List<NhatKyMedia>();

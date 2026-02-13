@@ -24,12 +24,13 @@ namespace JournalWeb.Controllers
             return RedirectToAction("Login");
         }
 
-        // ================= REGISTER =================
+        // ================= REGISTER (GET) =================
         public IActionResult Register()
         {
             return View();
         }
 
+        // ================= REGISTER (POST) =================
         [HttpPost]
         public IActionResult Register(
             string email,
@@ -51,6 +52,7 @@ namespace JournalWeb.Controllers
                 return View();
             }
 
+            // PIN: đúng 4 số
             if (string.IsNullOrEmpty(pin) || pin.Length != 4 || !pin.All(char.IsDigit))
             {
                 ViewBag.Loi = "Mã PIN phải gồm đúng 4 chữ số";
@@ -75,10 +77,10 @@ namespace JournalWeb.Controllers
                 Email = email,
                 HoTen = hoTen,
                 MatKhauHash = SecurityHelper.HashPassword(matKhau),
-                PinHash = SecurityHelper.HashPin(pin),  // lưu vào DB
+                PinHash = SecurityHelper.HashPin(pin),  // ✅ Lưu PIN vào DB
                 IsActive = true,
                 NgayTao = DateTime.Now,
-                QuyenId = 2  // mặc định User
+                QuyenId = 2  // ✅ Mặc định là User
             };
 
             _context.NguoiDung.Add(user);
@@ -87,12 +89,13 @@ namespace JournalWeb.Controllers
             return RedirectToAction("Login");
         }
 
-        // ================= LOGIN =================
+        // ================= LOGIN (GET) =================
         public IActionResult Login()
         {
             return View();
         }
 
+        // ================= LOGIN (POST) =================
         [HttpPost]
         public IActionResult Login(string email, string matKhau)
         {
@@ -121,12 +124,19 @@ namespace JournalWeb.Controllers
             HttpContext.Session.Clear();
             HttpContext.Session.SetInt32("NguoiDungId", user.NguoiDungId);
             HttpContext.Session.SetString("HoTen", user.HoTen ?? "");
-            HttpContext.Session.SetString("PinVerified", "false");
 
+            // ✅ Nếu là Admin hoặc chưa có PIN -> cho qua luôn
+            if (user.QuyenId == 1 || string.IsNullOrEmpty(user.PinHash))
+            {
+                HttpContext.Session.SetString("PinVerified", "true");
+                return RedirectToAction("Index", "NhatKy");
+            }
+
+            HttpContext.Session.SetString("PinVerified", "false");
             return RedirectToAction("VerifyPinLogin");
         }
 
-        // ================= PIN SAU LOGIN =================
+        // ================= VERIFY PIN AFTER LOGIN (GET) =================
         public IActionResult VerifyPinLogin()
         {
             if (!HttpContext.Session.GetInt32("NguoiDungId").HasValue)
@@ -134,6 +144,7 @@ namespace JournalWeb.Controllers
             return View();
         }
 
+        // ================= VERIFY PIN AFTER LOGIN (POST) =================
         [HttpPost]
         public IActionResult VerifyPinLogin(string pin)
         {
@@ -155,12 +166,13 @@ namespace JournalWeb.Controllers
             return RedirectToAction("Index", "NhatKy");
         }
 
-        // ================= FORGOT PASSWORD =================
+        // ================= FORGOT PASSWORD (GET) =================
         public IActionResult ForgotPassword()
         {
             return View();
         }
 
+        // ================= FORGOT PASSWORD (POST) =================
         [HttpPost]
         public IActionResult ForgotPassword(string email)
         {
@@ -176,7 +188,7 @@ namespace JournalWeb.Controllers
             return RedirectToAction("VerifyPinReset");
         }
 
-        // ================= PIN RESET PASSWORD =================
+        // ================= VERIFY PIN FOR RESET PASSWORD (GET) =================
         public IActionResult VerifyPinReset()
         {
             if (!HttpContext.Session.GetInt32("ResetUserId").HasValue)
@@ -184,6 +196,7 @@ namespace JournalWeb.Controllers
             return View();
         }
 
+        // ================= VERIFY PIN FOR RESET PASSWORD (POST) =================
         [HttpPost]
         public IActionResult VerifyPinReset(string pin)
         {
@@ -205,7 +218,7 @@ namespace JournalWeb.Controllers
             return RedirectToAction("ResetPassword");
         }
 
-        // ================= RESET PASSWORD =================
+        // ================= RESET PASSWORD (GET) =================
         public IActionResult ResetPassword()
         {
             if (HttpContext.Session.GetString("PinVerifiedReset") != "true")
@@ -213,6 +226,7 @@ namespace JournalWeb.Controllers
             return View();
         }
 
+        // ================= RESET PASSWORD (POST) =================
         [HttpPost]
         public IActionResult ResetPassword(string password, string confirm)
         {
@@ -223,8 +237,12 @@ namespace JournalWeb.Controllers
             }
 
             var userId = HttpContext.Session.GetInt32("ResetUserId");
+            if (!userId.HasValue)
+                return RedirectToAction("ForgotPassword");
+
             var user = _context.NguoiDung.Find(userId.Value);
-            if (user == null) return RedirectToAction("Login");
+            if (user == null)
+                return RedirectToAction("Login");
 
             user.MatKhauHash = SecurityHelper.HashPassword(password);
             _context.SaveChanges();

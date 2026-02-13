@@ -1,21 +1,21 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace JournalWeb.Models
 {
+    [Table("CamXucChiTiet")]
     public class CamXucChiTiet
     {
         [Key]
-        [Column("ChiTietId")]
-        public int CamXucId { get; set; }
-
+        public int ChiTietId { get; set; }
         public int MucDoId { get; set; }
-
-        [Column("TenChiTiet")]
-        public string TenCamXuc { get; set; }
-
+        public string TenChiTiet { get; set; }
         public int ThuTu { get; set; }
 
-        public MucDoCamXuc MucDoCamXuc { get; set; }
+        [ForeignKey("MucDoId")]
+        public virtual CamXuc CamXuc { get; set; }
+
+        public virtual ICollection<NhatKy_CamXucChiTiet> NhatKy_CamXucChiTiets { get; set; }
     }
 }

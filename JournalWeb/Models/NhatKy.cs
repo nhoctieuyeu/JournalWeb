@@ -1,32 +1,32 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace JournalWeb.Models
 {
+    [Table("NhatKy")]
     public class NhatKy
     {
+        [Key]
         public int NhatKyId { get; set; }
         public int NguoiDungId { get; set; }
-        public int MucDoId { get; set; }
-
+        public int MucDoId { get; set; }          // 👈 BẮT BUỘC
         public string TieuDe { get; set; }
         public string NoiDung { get; set; }
-        public DateTime NgayViet { get; set; }
+        public DateTime NgayViet { get; set; }    // 👈 THÊM
         public DateTime NgayTao { get; set; }
-        public bool IsRiengTu { get; set; }
+        public bool IsRiengTu { get; set; } = true;
 
-        [NotMapped]
-        public string CamXuc { get; set; }
+        // Navigation
+        [ForeignKey("NguoiDungId")]
+        public virtual NguoiDung NguoiDung { get; set; }
 
-        [NotMapped]
-        public DateTime? NgayCapNhat { get; set; }
+        [ForeignKey("MucDoId")]
+        public virtual CamXuc CamXuc { get; set; }
 
-        public ICollection<NhatKyMedia> Medias { get; set; }
-        public ICollection<NhatKy_CamXuc> NhatKy_CamXucs { get; set; }
-        public ICollection<NhatKy_DanhMuc> NhatKy_DanhMucs { get; set; }
-
-        public NguoiDung NguoiDung { get; set; }
-        public MucDoCamXuc MucDoCamXuc { get; set; }
+        public virtual ICollection<NhatKyMedia> Medias { get; set; }
+        public virtual ICollection<NhatKy_DanhMuc> NhatKy_DanhMucs { get; set; }
+        public virtual ICollection<NhatKy_CamXucChiTiet> NhatKy_CamXucChiTiets { get; set; }
     }
 }

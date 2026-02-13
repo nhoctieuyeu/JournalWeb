@@ -7,56 +7,28 @@ namespace JournalWeb.Data
     {
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
+        // DbSet chính
         public DbSet<NguoiDung> NguoiDung { get; set; }
         public DbSet<PhanQuyen> PhanQuyen { get; set; }
+        public DbSet<CamXuc> CamXuc { get; set; }
+        public DbSet<CamXucChiTiet> CamXucChiTiet { get; set; }
+        public DbSet<DanhMuc> DanhMuc { get; set; }
+        public DbSet<NhatKy> NhatKy { get; set; }
+        public DbSet<NhatKy_CamXucChiTiet> NhatKy_CamXucChiTiet { get; set; }
+        public DbSet<NhatKy_DanhMuc> NhatKy_DanhMuc { get; set; }
+        public DbSet<NhatKyMedia> NhatKyMedia { get; set; }
+
+        // Các bảng phụ (giữ nguyên)
         public DbSet<Menu> Menu { get; set; }
         public DbSet<Slide> Slide { get; set; }
         public DbSet<TinTuc> TinTuc { get; set; }
         public DbSet<AuditLog> AuditLog { get; set; }
-
-        public DbSet<MucDoCamXuc> MucDoCamXuc { get; set; }
-        public DbSet<CamXucChiTiet> CamXucChiTiet { get; set; }
-        public DbSet<DanhMucTacDong> DanhMucTacDong { get; set; }
-
-        public DbSet<NhatKy> NhatKy { get; set; }
-        public DbSet<NhatKy_CamXuc> NhatKy_CamXuc { get; set; }
-        public DbSet<NhatKy_DanhMuc> NhatKy_DanhMuc { get; set; }
-        public DbSet<NhatKyMedia> NhatKyMedia { get; set; }
+        public DbSet<Tag> Tag { get; set; }
+        public DbSet<NhatKy_Tag> NhatKy_Tag { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<NguoiDung>().ToTable("NguoiDung");
-            modelBuilder.Entity<PhanQuyen>().ToTable("PhanQuyen");
-            modelBuilder.Entity<Menu>().ToTable("Menu");
-            modelBuilder.Entity<Slide>().ToTable("Slide");
-            modelBuilder.Entity<TinTuc>().ToTable("TinTuc");
-            modelBuilder.Entity<AuditLog>().ToTable("AuditLog");
-            modelBuilder.Entity<MucDoCamXuc>().ToTable("CamXuc");
-            modelBuilder.Entity<CamXucChiTiet>().ToTable("CamXucChiTiet");
-            modelBuilder.Entity<DanhMucTacDong>().ToTable("DanhMuc");
-            modelBuilder.Entity<NhatKy>().ToTable("NhatKy");
-            modelBuilder.Entity<NhatKy_CamXuc>().ToTable("NhatKy_CamXucChiTiet");
-            modelBuilder.Entity<NhatKy_DanhMuc>().ToTable("NhatKy_DanhMuc");
-            modelBuilder.Entity<NhatKyMedia>().ToTable("NhatKyMedia");
-
-            modelBuilder.Entity<PhanQuyen>()
-                .HasKey(x => x.QuyenId);
-
-            modelBuilder.Entity<AuditLog>()
-                .HasKey(x => x.LogId);
-
-            modelBuilder.Entity<MucDoCamXuc>()
-                .HasKey(x => x.MucDoId);
-
-            modelBuilder.Entity<CamXucChiTiet>()
-                .HasKey(x => x.CamXucId);
-
-            modelBuilder.Entity<DanhMucTacDong>()
-                .HasKey(x => x.DanhMucId);
-
-            modelBuilder.Entity<NhatKyMedia>()
-                .HasKey(x => x.MediaId);
-
+            // === CẤU HÌNH NguoiDung ===
             modelBuilder.Entity<NguoiDung>()
                 .HasIndex(x => x.TaiKhoan)
                 .IsUnique();
@@ -65,39 +37,56 @@ namespace JournalWeb.Data
                 .HasIndex(x => x.Email)
                 .IsUnique();
 
+            modelBuilder.Entity<NguoiDung>()
+                .HasOne(x => x.PhanQuyen)
+                .WithMany(x => x.NguoiDungs)
+                .HasForeignKey(x => x.QuyenId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // === CẤU HÌNH NhatKy ===
             modelBuilder.Entity<NhatKy>()
-                .HasMany(x => x.Medias)
-                .WithOne(x => x.NhatKy)
-                .HasForeignKey(x => x.NhatKyId)
+                .HasOne(x => x.NguoiDung)
+                .WithMany(x => x.NhatKys)
+                .HasForeignKey(x => x.NguoiDungId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<NhatKy>()
-                .HasOne(x => x.MucDoCamXuc)
+                .HasOne(x => x.CamXuc)
                 .WithMany(x => x.NhatKys)
                 .HasForeignKey(x => x.MucDoId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            modelBuilder.Entity<CamXucChiTiet>()
-                .HasOne(x => x.MucDoCamXuc)
-                .WithMany(x => x.CamXucChiTiets)
-                .HasForeignKey(x => x.MucDoId)
-                .OnDelete(DeleteBehavior.NoAction);
-
-            modelBuilder.Entity<NhatKy_CamXuc>()
-                .HasKey(x => new { x.NhatKyId, x.CamXucId });
-
-            modelBuilder.Entity<NhatKy_CamXuc>()
+            // === CẤU HÌNH NhatKyMedia ===
+            modelBuilder.Entity<NhatKyMedia>()
                 .HasOne(x => x.NhatKy)
-                .WithMany(x => x.NhatKy_CamXucs)
+                .WithMany(x => x.Medias)
                 .HasForeignKey(x => x.NhatKyId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            modelBuilder.Entity<NhatKy_CamXuc>()
-                .HasOne(x => x.CamXucChiTiet)
-                .WithMany()
-                .HasForeignKey(x => x.CamXucId)
-                .OnDelete(DeleteBehavior.NoAction);
+            // === CẤU HÌNH CamXucChiTiet ===
+            modelBuilder.Entity<CamXucChiTiet>()
+                .HasOne(x => x.CamXuc)
+                .WithMany(x => x.CamXucChiTiets)
+                .HasForeignKey(x => x.MucDoId)
+                .OnDelete(DeleteBehavior.Cascade);
 
+            // === CẤU HÌNH NhatKy_CamXucChiTiet (quan hệ nhiều-nhiều) ===
+            modelBuilder.Entity<NhatKy_CamXucChiTiet>()
+                .HasKey(x => new { x.NhatKyId, x.ChiTietId });
+
+            modelBuilder.Entity<NhatKy_CamXucChiTiet>()
+                .HasOne(x => x.NhatKy)
+                .WithMany(x => x.NhatKy_CamXucChiTiets)
+                .HasForeignKey(x => x.NhatKyId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<NhatKy_CamXucChiTiet>()
+                .HasOne(x => x.CamXucChiTiet)
+                .WithMany(x => x.NhatKy_CamXucChiTiets)
+                .HasForeignKey(x => x.ChiTietId)
+                .OnDelete(DeleteBehavior.NoAction);  // Tránh multiple cascade paths
+
+            // === CẤU HÌNH NhatKy_DanhMuc (quan hệ nhiều-nhiều) ===
             modelBuilder.Entity<NhatKy_DanhMuc>()
                 .HasKey(x => new { x.NhatKyId, x.DanhMucId });
 
@@ -108,10 +97,28 @@ namespace JournalWeb.Data
                 .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<NhatKy_DanhMuc>()
-                 .HasOne<DanhMucTacDong>()
+                .HasOne(x => x.DanhMuc)
                 .WithMany(x => x.NhatKy_DanhMucs)
                 .HasForeignKey(x => x.DanhMucId)
-                .OnDelete(DeleteBehavior.NoAction);
+                .OnDelete(DeleteBehavior.NoAction);  // Tránh multiple cascade paths
+
+            // === CẤU HÌNH NhatKy_Tag (nếu dùng) ===
+            modelBuilder.Entity<NhatKy_Tag>()
+                .HasKey(x => new { x.NhatKyId, x.TagId });
+
+            modelBuilder.Entity<NhatKy_Tag>()
+                .HasOne(x => x.NhatKy)
+                .WithMany()  // Nếu NhatKy chưa có collection Tags thì để trống
+                .HasForeignKey(x => x.NhatKyId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<NhatKy_Tag>()
+                .HasOne(x => x.Tag)
+                .WithMany(x => x.NhatKy_Tags)
+                .HasForeignKey(x => x.TagId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            base.OnModelCreating(modelBuilder);
         }
     }
 }
