@@ -39,6 +39,12 @@ namespace JournalWeb.Data
             modelBuilder.Entity<NhatKy_DanhMuc>().ToTable("NhatKy_DanhMuc");
             modelBuilder.Entity<NhatKyMedia>().ToTable("NhatKyMedia");
 
+            modelBuilder.Entity<MucDoCamXuc>()
+                .HasKey(x => x.MucDoId);
+
+            modelBuilder.Entity<CamXucChiTiet>()
+                .HasKey(x => x.CamXucId);
+
             modelBuilder.Entity<NguoiDung>()
                 .HasIndex(x => x.TaiKhoan)
                 .IsUnique();

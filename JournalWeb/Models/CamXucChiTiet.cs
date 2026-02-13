@@ -1,9 +1,11 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace JournalWeb.Models
 {
     public class CamXucChiTiet
     {
+        [Key]
         [Column("ChiTietId")]
         public int CamXucId { get; set; }
 
