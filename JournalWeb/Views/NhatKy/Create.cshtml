@@ -1,10 +1,5 @@
-﻿@using JournalWeb.Models
-@using System.Text.Json
-@{
+﻿@{
     ViewData["Title"] = "Viết nhật ký";
-
-    var camXucList = ViewBag.CamXucList as List<CamXuc> ?? new List<CamXuc>();
-    var danhMucList = ViewBag.DanhMucList as List<DanhMuc> ?? new List<DanhMuc>();
 }
 
 <style>
@@ -237,8 +232,6 @@
         opacity: 0;
         animation: chipIn .35s ease forwards;
         box-shadow: 0 2px 6px rgba(0,0,0,.06);
-        cursor: pointer;
-        transition: all 0.1s ease;
     }
 
         .chip.active {
@@ -348,7 +341,7 @@
 
         <div class="mood-name" id="moodName">Rất khó chịu</div>
 
-        <input id="moodRange" class="mood-slider" type="range" min="1" max="7" step="1" value="1" />
+        <input id="moodRange" class="mood-slider" type="range" min="0" max="6" step="0.01" value="0" />
         <div class="mood-label-row"><span>RẤT KHÓ CHỊU</span><span>RẤT DỄ CHỊU</span></div>
 
         <div class="section-title">Điều nào mô tả đúng nhất về cảm giác này?</div>
@@ -358,17 +351,14 @@
         <div class="chip-wrap" id="moodImpactWrap"></div>
     </div>
 
-    <form method="post" enctype="multipart/form-data" id="journalForm">
-        @Html.AntiForgeryToken()
-
-        <input type="hidden" name="mucDoId" id="mucDoId" value="1" />
-        <div id="selectedChiTietContainer"></div>
-        <div id="selectedDanhMucContainer"></div>
+    <form method="post" enctype="multipart/form-data">
+        <input type="hidden" name="moodLevel" id="moodLevel" value="1" />
+        <input type="hidden" name="moodLabel" id="moodLabel" value="Rất khó chịu" />
 
         <input class="form-control my-2" name="tieuDe" placeholder="Tiêu đề (không bắt buộc)" />
         <input type="date" name="ngayViet" class="form-control my-2" value="@DateTime.Now.ToString("yyyy-MM-dd")" />
 
-        <textarea class="form-control my-2" rows="6" name="noiDung" placeholder="Hôm nay bạn cảm thấy thế nào?" required></textarea>
+        <textarea class="form-control my-2" rows="6" name="noiDung" placeholder="Hôm nay bạn cảm thấy thế nào?"></textarea>
 
         <input type="file" name="medias" class="form-control my-2" accept="image/*,video/*" multiple onchange="handleMediaSelection(this)" />
 
@@ -385,169 +375,152 @@
 </div>
 
 <script>
-    // ------------------------------------------------------------
-    // Dữ liệu được truyền từ ViewBag (server)
-    // ------------------------------------------------------------
-    const camXucList = @Html.Raw(JsonSerializer.Serialize(camXucList.Select(c => new {
-        c.CamXucId,
-        c.TenCamXuc,
-        c.MaMauGradient,
-        ChiTiets = c.CamXucChiTiets.OrderBy(ct => ct.ThuTu).Select(ct => new { ct.ChiTietId, ct.TenChiTiet })
-    })));
+    const moodStates = [
+        { name: "Rất khó chịu", top: "#d9d2ef", bottom: "#bcb0e3", c1: "#f4ebff", c2: "#c39aff", c3: "#7c4bc4", petals: 14, sharp: 2.6, amp: .26, desc: ["Tức giận", "Lo lắng", "Sợ hãi", "Ngợp", "Xấu hổ", "Chán ghét", "Bối rối", "Nản lòng", "Khó chịu", "Ghen tị", "Căng thẳng", "Lo âu", "Tội lỗi", "Ngạc nhiên", "Vô vọng", "Bực tức", "Cô đơn", "Chán nản", "Thất vọng", "Kiệt sức", "Buồn"] },
+        { name: "Khó chịu", top: "#d7e2fb", bottom: "#beccef", c1: "#eef4ff", c2: "#9fb8ff", c3: "#5278e5", petals: 11, sharp: 2.1, amp: .22, desc: ["Bực bội", "Căng thẳng", "Mệt mỏi", "Khó chịu", "Lúng túng", "Buồn chán", "Thiếu động lực", "Áp lực"] },
+        { name: "Hơi khó chịu", top: "#dff0f8", bottom: "#cbdeee", c1: "#ecf8ff", c2: "#92cdf5", c3: "#4a9fdb", petals: 8, sharp: 1.45, amp: .16, desc: ["Hơi mệt", "Lăn tăn", "Không tập trung", "Thiếu năng lượng", "Lo nhẹ", "Không thoải mái"] },
+        { name: "Bình thường", top: "#e0eef2", bottom: "#c9dde2", c1: "#f6fdff", c2: "#a8dcee", c3: "#77b8cf", rings: true, petals: 0, sharp: 1, amp: .03, desc: ["Hài lòng", "Bình tĩnh", "Bình yên", "Lãnh đạm", "Kiệt sức"] },
+        { name: "Hơi dễ chịu", top: "#e4f5d8", bottom: "#cce6ba", c1: "#f2ffe7", c2: "#a5e86f", c3: "#6bc436", petals: 5, sharp: 1.05, amp: .11, desc: ["Nhẹ nhõm", "Thoải mái", "Dễ chịu", "Khá vui", "Ổn định", "Có hy vọng"] },
+        { name: "Dễ chịu", top: "#f9efc8", bottom: "#eedca5", c1: "#fff8df", c2: "#ffde58", c3: "#f0b21f", petals: 7, sharp: 1.28, amp: .17, desc: ["Vui", "Lạc quan", "Hài lòng", "Tự tin", "Yêu đời", "Tích cực", "Thoả mãn"] },
+        { name: "Rất dễ chịu", top: "#f8e4ba", bottom: "#f0cf96", c1: "#fff7e3", c2: "#ffc75f", c3: "#f09d17", petals: 9, sharp: 0.9, amp: .22, desc: ["Kinh ngạc", "Phấn khích", "Ngạc nhiên", "Sôi nổi", "Hạnh phúc", "Vui vẻ", "Dũng cảm", "Tự hào", "Tự tin", "Hy vọng", "Thích thú", "Thoả mãn", "Nhẹ nhõm", "Biết ơn", "Hài lòng", "Bình tĩnh", "Bình yên"] }
+    ];
 
-    const danhMucList = @Html.Raw(JsonSerializer.Serialize(danhMucList.Select(d => new {
-        d.DanhMucId,
-        d.TenDanhMuc
-    })));
+    const impacts = ["Sức khỏe", "Thể dục", "Chăm sóc bản thân", "Sở thích", "Danh tính", "Tâm linh", "Cộng đồng", "Gia đình", "Bạn bè", "Bạn đời", "Hẹn hò", "Nhiệm vụ", "Công việc", "Giáo dục", "Du lịch", "Thời tiết", "Sự kiện hiện tại", "Tiền"];
 
-    // ------------------------------------------------------------
-    // Biến toàn cục
-    // ------------------------------------------------------------
-    let currentMucDoId = 1;
-    const selectedChiTietIds = new Set();
-    const selectedDanhMucIds = new Set();
     const selectedFiles = [];
+    const selectedDescs = new Set();
+    const selectedImpacts = new Set();
 
-    // ------------------------------------------------------------
-    // Khởi tạo giao diện
-    // ------------------------------------------------------------
-    document.addEventListener('DOMContentLoaded', function () {
-        updateMoodUI(currentMucDoId);
-        renderChipsForMood(currentMucDoId);
-        renderDanhMucChips();
-        renderPreview();
-    });
+    const hexToRgb = (hex) => {
+        const n = hex.replace('#', '');
+        const num = parseInt(n, 16);
+        return { r: (num >> 16) & 255, g: (num >> 8) & 255, b: num & 255 };
+    };
 
-    // ------------------------------------------------------------
-    // Xử lý slider thay đổi mức độ
-    // ------------------------------------------------------------
-    document.getElementById('moodRange').addEventListener('input', function (e) {
-        const mucDo = parseInt(e.target.value);
-        currentMucDoId = mucDo;
-        document.getElementById('mucDoId').value = mucDo;
-        updateMoodUI(mucDo);
-        renderChipsForMood(mucDo);
-        renderPreview(); // cập nhật preview mood
-    });
+    const rgbToHex = ({ r, g, b }) => `#${[r,g,b].map(v => Math.max(0,Math.min(255,Math.round(v))).toString(16).padStart(2,'0')).join('')}`;
+    const lerp = (a, b, t) => a + (b - a) * t;
 
-    // ------------------------------------------------------------
-    // Cập nhật màu sắc, tên cảm xúc, SVG
-    // ------------------------------------------------------------
-    function updateMoodUI(mucDo) {
-        const mood = camXucList.find(c => c.CamXucId === mucDo);
-        if (!mood) return;
+    function lerpHex(h1, h2, t) {
+        const a = hexToRgb(h1), b = hexToRgb(h2);
+        return rgbToHex({ r: lerp(a.r,b.r,t), g: lerp(a.g,b.g,t), b: lerp(a.b,b.b,t) });
+    }
+
+    function moodInterpolated(value) {
+        const lo = Math.max(0, Math.min(6, Math.floor(value)));
+        const hi = Math.max(0, Math.min(6, Math.ceil(value)));
+        const t = value - lo;
+        const A = moodStates[lo];
+        const B = moodStates[hi];
+
+        return {
+            name: moodStates[Math.round(value)].name,
+            top: lerpHex(A.top, B.top, t),
+            bottom: lerpHex(A.bottom, B.bottom, t),
+            c1: lerpHex(A.c1, B.c1, t),
+            c2: lerpHex(A.c2, B.c2, t),
+            c3: lerpHex(A.c3, B.c3, t),
+            petals: lerp(A.petals || 0, B.petals || 0, t),
+            sharp: lerp(A.sharp || 1, B.sharp || 1, t),
+            amp: lerp(A.amp || 0, B.amp || 0, t),
+            rings: (A.rings && B.rings) || (Math.round(value) === 3)
+        };
+    }
+
+    function flowerPoints(radius, petals, amp, sharp, phase = 0, count = 260) {
+        let pts = [];
+        for (let i = 0; i < count; i++) {
+            const t = (Math.PI * 2 * i) / count;
+            const wave = Math.sin(petals * t + phase);
+            const softened = Math.sign(wave) * Math.pow(Math.abs(wave), sharp);
+            const r = radius * (1 + amp * softened);
+            const x = 50 + r * Math.cos(t);
+            const y = 50 + r * Math.sin(t);
+            pts.push(`${x.toFixed(2)},${y.toFixed(2)}`);
+        }
+        return pts.join(' ');
+    }
+
+    function buildMoodSvg(mood, mini = false, idPrefix = "m") {
+        const cls = mini ? 'mood-svg-mini' : 'mood-svg';
+        const petalBase = Math.max(4, mood.petals || 6);
+        const grad1 = `${idPrefix}-g1`;
+        const gradA = `${idPrefix}-ga`;
+        const gradB = `${idPrefix}-gb`;
+        const gradC = `${idPrefix}-gc`;
+
+        if (mood.rings) {
+            return `<svg class="${cls}" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <circle class="layer1" cx="50" cy="50" r="42" fill="none" stroke="${mood.c1}" stroke-width="1.2"/>
+                <circle class="layer2" cx="50" cy="50" r="31" fill="none" stroke="${mood.c2}" stroke-width="1.6"/>
+                <circle class="layer3" cx="50" cy="50" r="20" fill="url(#${grad1})" stroke="${mood.c3}" stroke-width="1.2"/>
+                <circle class="core" cx="50" cy="50" r="4.5" fill="#fff"/>
+                <defs>
+                    <radialGradient id="${grad1}" cx="35%" cy="30%">
+                        <stop offset="0%" stop-color="#ffffff"/>
+                        <stop offset="100%" stop-color="${mood.c2}"/>
+                    </radialGradient>
+                </defs>
+            </svg>`;
+        }
+
+        const p1 = flowerPoints(39, petalBase, mood.amp, mood.sharp, 0);
+        const p2 = flowerPoints(30, Math.max(3, petalBase - 1), Math.max(.04, mood.amp - .04), Math.max(.8, mood.sharp - .18), .35);
+        const p3 = flowerPoints(21, Math.max(3, petalBase - 2), Math.max(.03, mood.amp - .08), Math.max(.7, mood.sharp - .25), -.35);
+
+        return `<svg class="${cls}" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <radialGradient id="${gradA}" cx="30%" cy="28%"><stop offset="0%" stop-color="#fff"/><stop offset="100%" stop-color="${mood.c1}"/></radialGradient>
+                <radialGradient id="${gradB}" cx="35%" cy="32%"><stop offset="0%" stop-color="#fff"/><stop offset="100%" stop-color="${mood.c2}"/></radialGradient>
+                <radialGradient id="${gradC}" cx="40%" cy="34%"><stop offset="0%" stop-color="#fff"/><stop offset="100%" stop-color="${mood.c3}"/></radialGradient>
+            </defs>
+            <polygon class="layer1" points="${p1}" fill="url(#${gradA})" stroke="${mood.c3}" stroke-opacity=".45" stroke-width=".9"/>
+            <polygon class="layer2" points="${p2}" fill="url(#${gradB})" stroke="${mood.c3}" stroke-opacity=".58" stroke-width="1"/>
+            <polygon class="layer3" points="${p3}" fill="url(#${gradC})" stroke="${mood.c3}" stroke-opacity=".78" stroke-width="1.1"/>
+            <circle class="core" cx="50" cy="50" r="2.8" fill="#fff"/>
+        </svg>`;
+    }
+
+    function renderChips(containerId, items, targetSet, activeColor) {
+        const wrap = document.getElementById(containerId);
+        wrap.innerHTML = "";
+        items.forEach((text, idx) => {
+            const chip = document.createElement("button");
+            chip.type = "button";
+            chip.className = "chip";
+            chip.style.animationDelay = `${idx * 22}ms`;
+            chip.innerText = text;
+            chip.onclick = () => {
+                if (targetSet.has(text)) {
+                    targetSet.delete(text);
+                    chip.classList.remove("active");
+                    chip.style.background = "rgba(255,255,255,.72)";
+                } else {
+                    targetSet.add(text);
+                    chip.classList.add("active");
+                    chip.style.background = activeColor;
+                }
+            };
+            wrap.appendChild(chip);
+        });
+    }
+
+    function updateMoodUI(rawValue) {
+        const mood = moodInterpolated(rawValue);
+        const step = Math.round(rawValue);
 
         const box = document.getElementById("moodBox");
-        box.style.background = mood.MaMauGradient;
-        document.getElementById("moodName").innerText = mood.TenCamXuc;
-        document.getElementById("moodArt").innerHTML = buildMoodSvg(mood, false);
+        box.style.background = `radial-gradient(circle at 50% 24%, ${mood.top}, ${mood.bottom})`;
+
+        document.getElementById("moodName").innerText = mood.name;
+        document.getElementById("moodLabel").value = moodStates[step].name;
+        document.getElementById("moodLevel").value = step + 1;
+        document.getElementById("moodArt").innerHTML = buildMoodSvg(mood, false, "main");
+
+        selectedDescs.clear();
+        renderChips("moodDescWrap", moodStates[step].desc, selectedDescs, mood.c3);
+        renderChips("moodImpactWrap", impacts, selectedImpacts, mood.c3);
     }
 
-    // ------------------------------------------------------------
-    // Render các chip cảm xúc chi tiết theo mức độ
-    // ------------------------------------------------------------
-    function renderChipsForMood(mucDo) {
-        const mood = camXucList.find(c => c.CamXucId === mucDo);
-        if (!mood) return;
-
-        const wrap = document.getElementById("moodDescWrap");
-        wrap.innerHTML = "";
-
-        mood.ChiTiets.forEach((chip, idx) => {
-            const btn = document.createElement("button");
-            btn.type = "button";
-            btn.className = "chip";
-            btn.innerText = chip.TenChiTiet;
-            btn.dataset.chitietid = chip.ChiTietId;
-            btn.style.animationDelay = `${idx * 20}ms`;
-
-            if (selectedChiTietIds.has(chip.ChiTietId)) {
-                btn.classList.add("active");
-                btn.style.background = mood.MaMauGradient;
-            }
-
-            btn.onclick = function () {
-                const id = parseInt(this.dataset.chitietid);
-                if (selectedChiTietIds.has(id)) {
-                    selectedChiTietIds.delete(id);
-                    this.classList.remove("active");
-                    this.style.background = "rgba(255,255,255,.72)";
-                } else {
-                    selectedChiTietIds.add(id);
-                    this.classList.add("active");
-                    this.style.background = mood.MaMauGradient;
-                }
-                updateHiddenInputs();
-            };
-            wrap.appendChild(btn);
-        });
-    }
-
-    // ------------------------------------------------------------
-    // Render danh mục tác động
-    // ------------------------------------------------------------
-    function renderDanhMucChips() {
-        const wrap = document.getElementById("moodImpactWrap");
-        wrap.innerHTML = "";
-
-        danhMucList.forEach((dm, idx) => {
-            const btn = document.createElement("button");
-            btn.type = "button";
-            btn.className = "chip";
-            btn.innerText = dm.TenDanhMuc;
-            btn.dataset.danhmucid = dm.DanhMucId;
-            btn.style.animationDelay = `${idx * 20}ms`;
-
-            if (selectedDanhMucIds.has(dm.DanhMucId)) {
-                btn.classList.add("active");
-                btn.style.background = "#007aff";
-            }
-
-            btn.onclick = function () {
-                const id = parseInt(this.dataset.danhmucid);
-                if (selectedDanhMucIds.has(id)) {
-                    selectedDanhMucIds.delete(id);
-                    this.classList.remove("active");
-                    this.style.background = "rgba(255,255,255,.72)";
-                } else {
-                    selectedDanhMucIds.add(id);
-                    this.classList.add("active");
-                    this.style.background = "#007aff";
-                }
-                updateHiddenInputs();
-            };
-            wrap.appendChild(btn);
-        });
-    }
-
-    // ------------------------------------------------------------
-    // Cập nhật input hidden gửi lên server
-    // ------------------------------------------------------------
-    function updateHiddenInputs() {
-        const chiTietContainer = document.getElementById("selectedChiTietContainer");
-        chiTietContainer.innerHTML = "";
-        selectedChiTietIds.forEach(id => {
-            const input = document.createElement("input");
-            input.type = "hidden";
-            input.name = "chiTietIds";
-            input.value = id;
-            chiTietContainer.appendChild(input);
-        });
-
-        const danhMucContainer = document.getElementById("selectedDanhMucContainer");
-        danhMucContainer.innerHTML = "";
-        selectedDanhMucIds.forEach(id => {
-            const input = document.createElement("input");
-            input.type = "hidden";
-            input.name = "danhMucIds";
-            input.value = id;
-            danhMucContainer.appendChild(input);
-        });
-    }
-
-    // ------------------------------------------------------------
-    // Xử lý upload media & preview
-    // ------------------------------------------------------------
     function handleMediaSelection(input) {
         if (!input || !input.files || !input.files.length) return;
         for (const file of input.files) {
@@ -571,20 +544,21 @@
         renderPreview();
     }
 
-    // ------------------------------------------------------------
-    // Render preview media + mood
-    // ------------------------------------------------------------
+    function moodMiniHtml(mood) {
+        return `<div class="mini-art">${buildMoodSvg(mood, true, "preview")}</div>`;
+    }
+
     function renderPreview() {
         const p = document.getElementById("preview");
         p.innerHTML = "";
 
-        const mood = camXucList.find(c => c.CamXucId === currentMucDoId) || camXucList[0];
-        if (!mood) return;
+        const raw = Number(document.getElementById("moodRange").value || 0);
+        const mood = moodInterpolated(raw);
 
         const emotionItem = document.createElement("div");
         emotionItem.className = "media-item big emotion-cover";
-        emotionItem.style.background = mood.MaMauGradient;
-        emotionItem.innerHTML = `<div class="mini-art">${buildMoodSvg(mood, true)}</div><div class="emotion-caption">${mood.TenCamXuc}</div>`;
+        emotionItem.style.background = `radial-gradient(circle at 50% 24%, ${mood.top}, ${mood.bottom})`;
+        emotionItem.innerHTML = moodMiniHtml(mood) + `<div class="emotion-caption">${mood.name}</div>`;
         p.appendChild(emotionItem);
 
         selectedFiles.forEach((file, idx) => {
@@ -624,50 +598,12 @@
         });
     }
 
-    // ------------------------------------------------------------
-    // Hàm tạo SVG mood (giữ nguyên từ bản cũ)
-    // ------------------------------------------------------------
-    function flowerPoints(radius, petals, amp, sharp, phase = 0, count = 260) {
-        let pts = [];
-        for (let i = 0; i < count; i++) {
-            const t = (Math.PI * 2 * i) / count;
-            const wave = Math.sin(petals * t + phase);
-            const softened = Math.sign(wave) * Math.pow(Math.abs(wave), sharp);
-            const r = radius * (1 + amp * softened);
-            const x = 50 + r * Math.cos(t);
-            const y = 50 + r * Math.sin(t);
-            pts.push(`${x.toFixed(2)},${y.toFixed(2)}`);
-        }
-        return pts.join(' ');
-    }
+    document.getElementById("moodRange").addEventListener("input", (e) => {
+        const value = Number(e.target.value);
+        updateMoodUI(value);
+        renderPreview();
+    });
 
-    function buildMoodSvg(mood, mini = false) {
-        const cls = mini ? 'mood-svg-mini' : 'mood-svg';
-        const petalBase = mood.CamXucId === 4 ? 0 : (mood.CamXucId === 1 ? 14 : mood.CamXucId === 2 ? 11 : mood.CamXucId === 3 ? 8 : mood.CamXucId === 5 ? 5 : mood.CamXucId === 6 ? 7 : 9);
-        const amp = mood.CamXucId === 4 ? 0.03 : [0.26,0.22,0.16,0.03,0.11,0.17,0.22][mood.CamXucId-1];
-        const sharp = mood.CamXucId === 4 ? 1 : [2.6,2.1,1.45,1,1.05,1.28,0.9][mood.CamXucId-1];
-        const c1 = mood.MaMauGradient.includes('#') ? '#ffffff' : '#f0f0f0';
-        const c2 = '#c0c0c0';
-        const c3 = '#a0a0a0';
-
-        if (mood.CamXucId === 4) {
-            return `<svg class="${cls}" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                <circle class="layer1" cx="50" cy="50" r="42" fill="none" stroke="${c2}" stroke-width="1.2"/>
-                <circle class="layer2" cx="50" cy="50" r="31" fill="none" stroke="${c1}" stroke-width="1.6"/>
-                <circle class="layer3" cx="50" cy="50" r="20" fill="white" stroke="${c3}" stroke-width="1.2"/>
-                <circle class="core" cx="50" cy="50" r="4.5" fill="#fff"/>
-            </svg>`;
-        }
-
-        const p1 = flowerPoints(39, petalBase, amp, sharp, 0);
-        const p2 = flowerPoints(30, Math.max(3, petalBase - 1), Math.max(.04, amp - .04), Math.max(.8, sharp - .18), .35);
-        const p3 = flowerPoints(21, Math.max(3, petalBase - 2), Math.max(.03, amp - .08), Math.max(.7, sharp - .25), -.35);
-
-        return `<svg class="${cls}" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-            <polygon class="layer1" points="${p1}" fill="white" stroke="${c3}" stroke-opacity=".45" stroke-width=".9"/>
-            <polygon class="layer2" points="${p2}" fill="white" stroke="${c3}" stroke-opacity=".58" stroke-width="1"/>
-            <polygon class="layer3" points="${p3}" fill="white" stroke="${c3}" stroke-opacity=".78" stroke-width="1.1"/>
-            <circle class="core" cx="50" cy="50" r="2.8" fill="#fff"/>
-        </svg>`;
-    }
+    updateMoodUI(0);
+    renderPreview();
 </script>

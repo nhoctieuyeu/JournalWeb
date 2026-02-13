@@ -1,55 +1,48 @@
 ﻿using JournalWeb.Data;
 using JournalWeb.Models;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace JournalWeb.Controllers
 {
     public class NhatKyController : Controller
     {
         private readonly AppDbContext _context;
-        private readonly IWebHostEnvironment _env;
 
-        public NhatKyController(AppDbContext context, IWebHostEnvironment env)
+        public NhatKyController(AppDbContext context)
         {
             _context = context;
-            _env = env;
         }
 
-        private int? GetCurrentUserId() => HttpContext.Session.GetInt32("NguoiDungId");
+        private int? CheckLogin() => HttpContext.Session.GetInt32("NguoiDungId");
 
-        private bool IsPinVerified() => HttpContext.Session.GetString("PinVerified") == "true";
-
-        // ================= INDEX =================
-        public async Task<IActionResult> Index()
+        public IActionResult Index()
         {
-            var userId = GetCurrentUserId();
+            var userId = CheckLogin();
             if (!userId.HasValue) return RedirectToAction("Login", "Auth");
-            if (!IsPinVerified()) return RedirectToAction("VerifyPinLogin", "Auth");
+            if (HttpContext.Session.GetString("PinVerified") != "true")
+                return RedirectToAction("VerifyPinLogin", "Auth");
 
-            var nhatKys = await _context.NhatKy
-                .Include(x => x.CamXuc)
+            var moodColorMap = LoadMoodColorMap();
+
+            var list = _context.NhatKy
                 .Include(x => x.Medias)
-                .Include(x => x.NhatKy_CamXucChiTiets)
-                    .ThenInclude(x => x.CamXucChiTiet)
-                .Include(x => x.NhatKy_DanhMucs)
-                    .ThenInclude(x => x.DanhMuc)
-                .Where(x => x.NguoiDungId == userId)
+                .Include(x => x.MucDoCamXuc)
+                 .Where(x => x.NguoiDungId == userId.Value)
                 .OrderByDescending(x => x.NgayViet)
+                .ThenByDescending(x => x.NgayTao)
                 .ThenByDescending(x => x.NhatKyId)
-                .ToListAsync();
+                .ToList();
 
-            var cards = nhatKys.Select(x => BuildCardVm(x)).ToList();
+            var cards = list.Select(x => BuildCardVm(x, moodColorMap)).ToList();
 
             var grouped = cards
-                .GroupBy(x => new { Year = x.NgayViet.Year, Month = x.NgayViet.Month })
+                .GroupBy(x => new { Year = (x.NgayViet ?? DateTime.Now).Year, Month = (x.NgayViet ?? DateTime.Now).Month })
                 .OrderByDescending(g => g.Key.Year)
                 .ThenByDescending(g => g.Key.Month)
                 .Select(g => new JournalMonthGroupVm
@@ -62,54 +55,30 @@ namespace JournalWeb.Controllers
             return View(grouped);
         }
 
-        // ================= CREATE =================
-        public async Task<IActionResult> Create()
+        public IActionResult Create()
         {
-            if (!GetCurrentUserId().HasValue) return RedirectToAction("Login", "Auth");
-            if (!IsPinVerified()) return RedirectToAction("VerifyPinLogin", "Auth");
-
-            // Load danh sách cảm xúc và danh mục để hiển thị trong view
-            ViewBag.CamXucList = await _context.CamXuc.OrderBy(c => c.CamXucId).ToListAsync();
-            ViewBag.DanhMucList = await _context.DanhMuc.OrderBy(d => d.DanhMucId).ToListAsync();
+            if (!CheckLogin().HasValue) return RedirectToAction("Login", "Auth");
             return View();
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(
-            string tieuDe,
-            string noiDung,
-            DateTime ngayViet,
-            int mucDoId,                // CamXucId
-            List<int> chiTietIds,       // các chip cảm xúc chi tiết đã chọn
-            List<int> danhMucIds,       // các danh mục đã chọn
-            List<IFormFile> medias)
+        public IActionResult Create(string tieuDe, string noiDung, DateTime ngayViet, int? moodLevel, string moodLabel, List<IFormFile> medias)
         {
-            var userId = GetCurrentUserId();
+            var userId = CheckLogin();
             if (!userId.HasValue) return RedirectToAction("Login", "Auth");
-            if (!IsPinVerified()) return RedirectToAction("VerifyPinLogin", "Auth");
 
             if (string.IsNullOrWhiteSpace(noiDung))
             {
                 ViewBag.Loi = "Nội dung không được để trống";
-                return await LoadCreateViewData();
+                return View();
             }
 
-            // Kiểm tra MucDoId có hợp lệ không
-            var camXuc = await _context.CamXuc.FindAsync(mucDoId);
-            if (camXuc == null)
-            {
-                ViewBag.Loi = "Vui lòng chọn cảm xúc";
-                return await LoadCreateViewData();
-            }
-
-            // Xử lý upload media
             var uploadedFiles = new List<(string FilePath, string Ext)>();
             if (medias != null && medias.Any(f => f != null && f.Length > 0))
             {
                 var allow = new[] { ".jpg", ".jpeg", ".png", ".mp4", ".mov", ".webm" };
-                var uploadFolder = Path.Combine(_env.WebRootPath, "uploads");
-                Directory.CreateDirectory(uploadFolder);
+                var folder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads");
+                Directory.CreateDirectory(folder);
 
                 foreach (var media in medias.Where(f => f != null && f.Length > 0))
                 {
@@ -117,115 +86,149 @@ namespace JournalWeb.Controllers
                     if (!allow.Contains(ext))
                     {
                         ViewBag.Loi = "Chỉ cho phép ảnh hoặc video ngắn (.jpg, .jpeg, .png, .mp4, .mov, .webm)";
-                        return await LoadCreateViewData();
+                        return View();
                     }
 
-                    var fileName = $"{Guid.NewGuid()}{ext}";
-                    var fullPath = Path.Combine(uploadFolder, fileName);
+                    var fileName = Guid.NewGuid() + ext;
+                    var fullPath = Path.Combine(folder, fileName);
                     using var stream = new FileStream(fullPath, FileMode.Create);
-                    await media.CopyToAsync(stream);
-                    uploadedFiles.Add(($"/uploads/{fileName}", ext));
+                    media.CopyTo(stream);
+                    uploadedFiles.Add(("/uploads/" + fileName, ext));
                 }
             }
 
-            // Tạo bài viết
-            var nhatKy = new NhatKy
+            var finalNoiDung = noiDung.Trim();
+            var safeMoodLabel = string.IsNullOrWhiteSpace(moodLabel)
+                ? null
+                : moodLabel.Trim().Replace("|", "/").Replace("]", "").Replace("[", "");
+
+            var selectedMoodLevel = Math.Clamp(moodLevel ?? 4, 1, 7);
+
+            string camXuc = null;
+            if (!string.IsNullOrWhiteSpace(safeMoodLabel))
+                camXuc = $"{selectedMoodLevel}|{safeMoodLabel}";
+
+            if (!string.IsNullOrWhiteSpace(camXuc))
+            {
+                var splitIndex = camXuc.IndexOf('|');
+                if (splitIndex > -1)
+                {
+                    var lv = camXuc.Substring(0, splitIndex);
+                    var label = camXuc.Substring(splitIndex + 1);
+                    finalNoiDung = $"[[MOOD|{lv}|{label}]]\n{finalNoiDung}";
+                }
+                else
+                {
+                    finalNoiDung = $"[[MOOD|4|{camXuc}]]\n{finalNoiDung}";
+                }
+            }
+
+            var selectedNgayViet = ngayViet == default ? DateTime.Today : ngayViet.Date;
+
+            var nk = new NhatKy
             {
                 NguoiDungId = userId.Value,
-                MucDoId = mucDoId,
-                TieuDe = tieuDe?.Trim(),
-                NoiDung = noiDung.Trim(),
-                NgayViet = ngayViet == default ? DateTime.Now : ngayViet,
+                MucDoId = selectedMoodLevel,
+                TieuDe = tieuDe,
+                NoiDung = finalNoiDung,
+                NgayViet = selectedNgayViet,
                 NgayTao = DateTime.Now,
                 IsRiengTu = true
             };
 
-            _context.NhatKy.Add(nhatKy);
-            await _context.SaveChangesAsync();
+            _context.NhatKy.Add(nk);
+            _context.SaveChanges();
 
-            // Lưu chi tiết cảm xúc (chip)
-            if (chiTietIds != null && chiTietIds.Any())
-            {
-                foreach (var chiTietId in chiTietIds.Distinct())
-                {
-                    _context.NhatKy_CamXucChiTiet.Add(new NhatKy_CamXucChiTiet
-                    {
-                        NhatKyId = nhatKy.NhatKyId,
-                        ChiTietId = chiTietId
-                    });
-                }
-                await _context.SaveChangesAsync();
-            }
-
-            // Lưu danh mục tác động
-            if (danhMucIds != null && danhMucIds.Any())
-            {
-                foreach (var danhMucId in danhMucIds.Distinct())
-                {
-                    _context.NhatKy_DanhMuc.Add(new NhatKy_DanhMuc
-                    {
-                        NhatKyId = nhatKy.NhatKyId,
-                        DanhMucId = danhMucId
-                    });
-                }
-                await _context.SaveChangesAsync();
-            }
-
-            // Lưu media
             if (uploadedFiles.Any())
             {
                 foreach (var file in uploadedFiles)
                 {
                     _context.NhatKyMedia.Add(new NhatKyMedia
                     {
-                        NhatKyId = nhatKy.NhatKyId,
+                        NhatKyId = nk.NhatKyId,
                         DuongDanFile = file.FilePath,
                         LoaiMedia = file.Ext == ".mp4" || file.Ext == ".mov" || file.Ext == ".webm" ? "video" : "image",
                         ThoiLuong = null,
                         NgayTao = DateTime.Now
                     });
                 }
-                await _context.SaveChangesAsync();
+                _context.SaveChanges();
             }
 
             return RedirectToAction("Index");
         }
 
-        // Helper: load lại dữ liệu cho view Create khi có lỗi
-        private async Task<IActionResult> LoadCreateViewData()
+        private JournalCardVm BuildCardVm(NhatKy item, Dictionary<int, string> moodColorMap)
         {
-            ViewBag.CamXucList = await _context.CamXuc.OrderBy(c => c.CamXucId).ToListAsync();
-            ViewBag.DanhMucList = await _context.DanhMuc.OrderBy(d => d.DanhMucId).ToListAsync();
-            return View();
-        }
+            var content = item.NoiDung ?? string.Empty;
+            var moodLevel = item.MucDoId;
+            var moodLabel = string.Empty;
 
-        // ================= BUILD CARD VIEW MODEL =================
-        private JournalCardVm BuildCardVm(NhatKy item)
-        {
-            var camXuc = item.CamXuc ?? new CamXuc();
-            var chiTiets = item.NhatKy_CamXucChiTiets?.Select(x => x.CamXucChiTiet?.TenChiTiet).Where(x => x != null).ToList() ?? new List<string>();
-            var danhMucs = item.NhatKy_DanhMucs?.Select(x => x.DanhMuc?.TenDanhMuc).Where(x => x != null).ToList() ?? new List<string>();
+            if (content.StartsWith("[[MOOD|", StringComparison.Ordinal))
+            {
+                var end = content.IndexOf("]]", StringComparison.Ordinal);
+                if (end > 0)
+                {
+                    var token = content.Substring(7, end - 7);
+                    var split = token.IndexOf('|');
+                    if (split > -1)
+                    {
+                        if (int.TryParse(token.Substring(0, split), out var lv)) moodLevel = lv;
+                        moodLabel = token.Substring(split + 1);
+                        content = content.Substring(end + 2).Trim();
+                    }
+                }
+            }
+
+            var moodColor = moodColorMap.TryGetValue(moodLevel, out var c)
+                ? c
+                : "linear-gradient(180deg, #F8EAD9 0%, #F7C66B 100%)";
+
+            if (string.IsNullOrWhiteSpace(moodLabel))
+            {
+                moodLabel = item.MucDoCamXuc?.TenMucDo;
+            }
 
             return new JournalCardVm
             {
                 NhatKyId = item.NhatKyId,
                 TieuDe = item.TieuDe,
-                NoiDungTomTat = item.NoiDung,
-                MoodLevel = camXuc.CamXucId,
-                MoodLabel = camXuc.TenCamXuc ?? "Không xác định",
-                MoodColor = camXuc.MaMauGradient ?? "#F7C66B",
-                MoodChiTiets = chiTiets,
-                DanhMucs = danhMucs,
+                NoiDungTomTat = content,
+                MoodLabel = string.IsNullOrWhiteSpace(moodLabel) ? ("Mức " + moodLevel) : moodLabel,
+                MoodLevel = moodLevel,
+                MoodColor = moodColor,
+                MoodTopic = GuessMoodTopic(content),
                 NgayViet = item.NgayViet,
                 DisplayDateLine = BuildDisplayDateLine(item.NgayViet),
                 Medias = item.Medias?.OrderBy(x => x.MediaId).ToList() ?? new List<NhatKyMedia>()
             };
         }
 
+        private Dictionary<int, string> LoadMoodColorMap()
+        {
+            var map = new Dictionary<int, string>();
+            try
+            {
+                var conn = _context.Database.GetDbConnection();
+                if (conn.State != System.Data.ConnectionState.Open) conn.Open();
+
+                using var cmd = conn.CreateCommand();
+                cmd.CommandText = "SELECT CamXucId, MaMauGradient FROM CamXuc";
+                using var reader = cmd.ExecuteReader();
+                while (reader.Read())
+                {
+                    if (!reader.IsDBNull(0) && !reader.IsDBNull(1))
+                        map[Convert.ToInt32(reader.GetValue(0))] = Convert.ToString(reader.GetValue(1))?.Trim();
+                }
+            }
+            catch { }
+            return map;
+        }
+
         private string BuildMonthTitle(int month, int year)
         {
             var now = DateTime.Now;
-            return year == now.Year ? $"Tháng {month}" : $"Tháng {month} năm {year}";
+            return year == now.Year ? $"Tháng {month}" : $"tháng {month} năm {year}";
         }
 
         private string BuildDisplayDateLine(DateTime dt)
@@ -241,6 +244,16 @@ namespace JournalWeb.Controllers
                 _ => "Chủ Nhật"
             };
             return $"{thu}, ngày {dt.Day} thg {dt.Month}, {dt.Year}";
+        }
+
+        private string GuessMoodTopic(string content)
+        {
+            if (string.IsNullOrWhiteSpace(content)) return "Gia đình";
+            var lower = content.ToLower();
+            if (lower.Contains("công việc") || lower.Contains("dự án")) return "Công việc";
+            if (lower.Contains("gia đình") || lower.Contains("nhà")) return "Gia đình";
+            if (lower.Contains("sức khỏe") || lower.Contains("bệnh")) return "Sức khỏe";
+            return "Các hoạt động khác";
         }
     }
 }
