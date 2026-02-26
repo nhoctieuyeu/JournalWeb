@@ -84,6 +84,7 @@ namespace JournalWeb.Controllers
             string noiDung,
             DateTime ngayViet,
             int mucDoId,
+            int moodLevel,
             List<int> chiTietIds,
             List<int> danhMucIds,
             List<IFormFile> medias)
@@ -96,6 +97,11 @@ namespace JournalWeb.Controllers
             {
                 ViewBag.Loi = "Nội dung không được để trống";
                 return await LoadCreateViewData();
+            }
+
+            if (mucDoId <= 0 && moodLevel > 0)
+            {
+                mucDoId = moodLevel;
             }
 
             var camXuc = await _context.CamXuc.FindAsync(mucDoId);
