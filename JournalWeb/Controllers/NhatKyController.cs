@@ -110,7 +110,7 @@ namespace JournalWeb.Controllers
             if (medias != null && medias.Any(f => f != null && f.Length > 0))
             {
                 var allow = new[] { ".jpg", ".jpeg", ".png", ".mp4", ".mov", ".webm" };
-                var uploadFolder = Path.Combine(_env.WebRootPath, "uploads");
+                var uploadFolder = Path.Combine(_env.WebRootPath, "Uploads");
                 Directory.CreateDirectory(uploadFolder);
 
                 foreach (var media in medias.Where(f => f != null && f.Length > 0))
@@ -126,7 +126,7 @@ namespace JournalWeb.Controllers
                     var fullPath = Path.Combine(uploadFolder, fileName);
                     using var stream = new FileStream(fullPath, FileMode.Create);
                     await media.CopyToAsync(stream);
-                    uploadedFiles.Add(($"/uploads/{fileName}", ext));
+                    uploadedFiles.Add(($"/Uploads/{fileName}", ext));
                 }
             }
 
